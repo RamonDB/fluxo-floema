@@ -509,7 +509,7 @@
       .map(
         (p, i) => `
         <li class="photo-item">
-          <img src="${p.src}" alt="Foto ${i + 1}" />
+          <img src="${esc(p.src)}" alt="Foto ${i + 1}" />
           ${i === 0 ? `<span class="photo-cover">Capa</span>` : `<button type="button" class="photo-act" data-first="${i}" aria-label="Usar foto ${i + 1} como capa">Capa</button>`}
           <button type="button" class="photo-del" data-del="${i}" aria-label="Remover foto ${i + 1}">✕</button>
         </li>`
@@ -524,6 +524,7 @@
     else if (first) pendingPhotos.unshift(...pendingPhotos.splice(+first.dataset.first, 1));
     else return;
     updatePreview();
+    saveDraft();
   });
 
   function nextId(list) {
@@ -536,18 +537,76 @@
     addStatus.className = `form-status ${kind}`;
   }
 
-  $("#btn-add").addEventListener("click", () => {
-    if (!isAdmin()) return openLogin();
-    form.reset();
+  /* Draft: unsaved form values (and photos, when they fit) survive closing the modal and reloading. */
+  const DRAFT_KEY = "fluxo.addDraft.v1";
+  const DRAFT_FIELDS = ["artist", "artistDates", "title", "year", "type", "id", "medium", "signed", "height", "width",
+    "depth", "edition", "priceBRL", "status", "description", "exhibitions", "literature", "kind"];
+  let draftTimer = null;
+
+  function readDraft() {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      return d && typeof d.values === "object" ? d : null;
+    } catch {
+      return null;
+    }
+  }
+  function saveDraft() {
+    clearTimeout(draftTimer);
+    const values = Object.fromEntries(DRAFT_FIELDS.map((n) => [n, form.elements[n].value]));
+    const photos = pendingPhotos.filter((p) => /^data:image\//.test(p.src));
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, photos }));
+    } catch {
+      // Photos too big for browser storage: keep only the text fields (photos stay in memory until reload).
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, photos: [] })); } catch {}
+    }
+  }
+  const saveDraftSoon = () => {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraft, 300);
+  };
+  function clearDraft() {
+    clearTimeout(draftTimer);
+    localStorage.removeItem(DRAFT_KEY);
     pendingPhotos = [];
-    setAddStatus("");
+  }
+  function fillDefaults() {
+    form.reset();
     form.elements.artist.value = G.artist;
     form.elements.artistDates.value = G.artistDates;
     form.elements.year.value = new Date().getFullYear();
+  }
+
+  $("#btn-add").addEventListener("click", () => {
+    if (!isAdmin()) return openLogin();
+    const draft = readDraft();
+    fillDefaults();
+    setAddStatus("");
+    $$(".invalid", form).forEach((el) => el.classList.remove("invalid"));
+    if (draft) {
+      DRAFT_FIELDS.forEach((n) => draft.values[n] != null && (form.elements[n].value = draft.values[n]));
+      if (!pendingPhotos.length && Array.isArray(draft.photos)) pendingPhotos = draft.photos.filter((p) => p && isSafeSrc(p.src));
+      setAddStatus("Rascunho restaurado: os últimos valores preenchidos foram recuperados.");
+    }
     openDialog(modal);
     updatePreview();
     form.elements.title.focus();
   });
+
+  $("#btn-clear-draft").addEventListener("click", () => {
+    if (form.classList.contains("busy")) return;
+    if (!confirm("Limpar todos os campos e fotos deste formulário?")) return;
+    clearDraft();
+    fillDefaults();
+    setAddStatus("");
+    $$(".invalid", form).forEach((el) => el.classList.remove("invalid"));
+    updatePreview();
+    form.elements.title.focus();
+  });
+
+  form.addEventListener("input", (e) => e.target.name !== "image" && saveDraftSoon());
+  form.addEventListener("change", (e) => e.target.name !== "image" && saveDraftSoon());
 
   $$("[data-close]", modal).forEach((b) => b.addEventListener("click", () => !form.classList.contains("busy") && closeDialog(modal)));
   modal.addEventListener("click", (e) => e.target === modal && !form.classList.contains("busy") && closeDialog(modal));
@@ -574,6 +633,7 @@
       else if (f.height.value && !f.width.value) f.width.value = Math.round(f.height.value / ratio);
     }
     updatePreview();
+    saveDraft();
   });
 
   const lines = (s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
@@ -645,6 +705,7 @@
       });
       works = result.list;
       headSha = result.sha;
+      clearDraft();
       form.classList.remove("busy");
       closeDialog(modal);
       state.filter = "all";

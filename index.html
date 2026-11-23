@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Fluxo Floema — Casa 12 | Obras Selecionadas" />
+  <title>Iahra e Vicente Baltar | Obras Selecionadas | Fluxo Floema</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header id="site-header" class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="brand" aria-label="Fluxo Floema — início">Fluxo Floema</a>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-list" aria-label="Abrir menu">
+          <span></span><span></span>
+        </button>
+        <ul id="nav-list">
+          <li><a href="#obras">Obras</a></li>
+          <li><a href="#artista">Artista</a></li>
+          <li><a href="#exposicao">Exposição</a></li>
+          <li><a href="#contato">Contato</a></li>
+          <li>
+            <select id="currency" aria-label="Moeda">
+              <option value="BRL">BRL</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </li>
+          <li class="auth">
+            <button id="btn-login" class="login-btn">Entrar</button>
+            <span id="user-box" class="user-box" hidden>
+              <span id="user-name" class="user-name"></span>
+              <button id="btn-logout" class="login-btn">Sair</button>
+            </span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero hero-cover" aria-label="Destaque">
+    <h1 class="sr-only">Fluxo-Floema — Iahra e Vicente Baltar</h1>
+    <img
+      class="hero-poster"
+      src="images/capa-fluxo-floema.jpg"
+      width="768" height="768"
+      alt="Cartaz da exposição Fluxo-Floema: Fluxo apresenta Iahra e Vicente Baltar, texto curatorial de Ariana Nuala. Quarta-feira, 25 de novembro, das 18h às 23h, Rua Augusta, 2366, casa 12."
+      fetchpriority="high"
+    />
+    <a href="#obras" class="scroll-cue" aria-label="Ver obras">↓</a>
+  </section>
+
+  <main>
+    <section class="container intro">
+      <p class="lead">
+        Uma seleção de pinturas e objetos cinéticos em que luz, cor e movimento se
+        tornam matéria. Produzidas entre 1990 e 2024, as obras investigam a percepção
+        do espectador como parte ativa da experiência artística.
+      </p>
+      <div class="filters">
+        <div id="filter-buttons" class="filter-buttons" role="toolbar" aria-label="Filtrar obras"></div>
+        <label class="toggle">
+          <input type="checkbox" id="only-available" /> Somente disponíveis
+        </label>
+        <div class="manage" id="manage" hidden>
+          <button id="btn-add" class="btn btn-small">+ Adicionar obra</button>
+          <button id="btn-export" class="link-btn">Exportar</button>
+          <label class="link-btn" for="import-file">Importar</label>
+          <input id="import-file" type="file" accept="application/json,.json" hidden />
+        </div>
+      </div>
+    </section>
+
+    <section id="obras" class="container grid" aria-live="polite"></section>
+
+    <section id="artista" class="container artist">
+      <div class="artist-portrait" id="artist-portrait" aria-hidden="true"></div>
+      <div class="artist-text">
+        <h2>Sobre o artista</h2>
+        <p class="meta">Vicente Baltar — Belo Horizonte, 1952</p>
+        <p>
+          Pioneiro da arte óptica e cinética no Brasil, Vicente Baltar iniciou sua
+          trajetória no final dos anos 1970, ao lado de grupos experimentais que
+          buscavam romper com a contemplação passiva da obra. Seus trabalhos utilizam
+          gamas cromáticas rigorosas, sistemas modulares e superfícies que se
+          transformam conforme o deslocamento do público.
+        </p>
+        <p>
+          Sua produção integra coleções públicas e privadas no Brasil, na Europa e nos
+          Estados Unidos, e foi apresentada em bienais e mostras individuais em
+          instituições de referência.
+        </p>
+      </div>
+    </section>
+
+    <section id="exposicao" class="container exhibition">
+      <h2>Exposição</h2>
+      <p class="exhibition-title">Fluxo-Floema</p>
+      <div class="exhibition-grid">
+        <div>
+          <p class="label">Artistas</p>
+          <p>Iahra e Vicente Baltar</p>
+        </div>
+        <div>
+          <p class="label">Texto curatorial</p>
+          <p>Ariana Nuala</p>
+        </div>
+        <div>
+          <p class="label">Data</p>
+          <p>Quarta-feira, 25 de novembro</p>
+        </div>
+        <div>
+          <p class="label">Horário</p>
+          <p>Das 18h às 23h</p>
+        </div>
+        <div>
+          <p class="label">Local</p>
+          <p>Rua Augusta, 2366, casa 12<br />São Paulo</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="container contact">
+      <h2>Contato</h2>
+      <p>Para mais informações sobre as obras, disponibilidade ou visitas privadas, fale conosco.</p>
+      <form id="contact-form" class="contact-form" novalidate>
+        <div class="field">
+          <label for="c-name">Nome</label>
+          <input id="c-name" name="name" required autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="c-email">E-mail</label>
+          <input id="c-email" name="email" type="email" required autocomplete="email" />
+        </div>
+        <div class="field full">
+          <label for="c-msg">Mensagem</label>
+          <textarea id="c-msg" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn">Enviar mensagem</button>
+        <p class="form-status" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Fluxo Floema — Rua Augusta, 2366, casa 12, São Paulo</span>
+      <span>© <span id="year"></span> Fluxo Floema. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+
+  <!-- Visualização detalhada da obra -->
+  <div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-labelledby="viewer-title" hidden>
+    <div class="viewer-bar">
+      <span id="viewer-count"></span>
+      <div class="viewer-actions">
+        <button id="btn-room" class="link-btn">Ver no ambiente</button>
+        <button id="btn-close" class="icon-btn" aria-label="Fechar">✕</button>
+      </div>
+    </div>
+    <button id="btn-prev" class="nav-btn prev" aria-label="Obra anterior">‹</button>
+    <button id="btn-next" class="nav-btn next" aria-label="Próxima obra">›</button>
+    <div class="viewer-body">
+      <div class="viewer-media">
+        <div id="viewer-image" class="viewer-image"></div>
+        <div id="viewer-room" class="room" hidden>
+          <div class="room-wall"><div id="room-art" class="room-art"></div></div>
+          <div class="room-floor"></div>
+          <div class="sofa"><div class="sofa-back"></div><div class="sofa-seat"></div></div>
+        </div>
+        <div id="viewer-thumbs" class="thumbs"></div>
+      </div>
+      <aside class="viewer-info">
+        <h2 id="viewer-title"></h2>
+        <div id="viewer-details" class="details"></div>
+        <p id="viewer-price" class="price"></p>
+        <button id="btn-enquire" class="btn">Consultar esta obra</button>
+        <button id="btn-remove" class="link-btn danger" hidden>Remover obra</button>
+        <div id="viewer-extra" class="extra"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Cadastro de nova obra -->
+  <div id="add-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="add-title" hidden>
+    <form id="add-form" class="modal-card" novalidate>
+      <div class="modal-head">
+        <h2 id="add-title">Adicionar obra</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fechar">✕</button>
+      </div>
+
+      <fieldset>
+        <legend>Artista</legend>
+        <div class="form-grid">
+          <div class="field"><label for="f-artist">Nome *</label><input id="f-artist" name="artist" required /></div>
+          <div class="field"><label for="f-dates">Datas</label><input id="f-dates" name="artistDates" placeholder="n. 1952 ou 1928-2020" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Obra</legend>
+        <div class="form-grid">
+          <div class="field"><label for="f-title">Título *</label><input id="f-title" name="title" required /></div>
+          <div class="field"><label for="f-year">Ano *</label><input id="f-year" name="year" type="number" min="1000" max="2100" required /></div>
+          <div class="field">
+            <label for="f-type">Tipo *</label>
+            <input id="f-type" name="type" list="type-options" required />
+            <datalist id="type-options">
+              <option value="Pintura"></option><option value="Objeto"></option><option value="Gravura"></option>
+              <option value="Escultura"></option><option value="Fotografia"></option><option value="Desenho"></option>
+            </datalist>
+          </div>
+          <div class="field"><label for="f-id">Código</label><input id="f-id" name="id" placeholder="Gerado automaticamente" /></div>
+          <div class="field full"><label for="f-medium">Técnica *</label><input id="f-medium" name="medium" required placeholder="Óleo sobre tela [Oil on canvas]" /></div>
+          <div class="field full"><label for="f-signed">Assinatura / inscrições</label><input id="f-signed" name="signed" placeholder="Assinada e datada no verso" /></div>
+          <div class="field"><label for="f-height">Altura (cm) *</label><input id="f-height" name="height" type="number" min="1" step="0.1" required /></div>
+          <div class="field"><label for="f-width">Largura (cm) *</label><input id="f-width" name="width" type="number" min="1" step="0.1" required /></div>
+          <div class="field"><label for="f-depth">Profundidade (cm)</label><input id="f-depth" name="depth" type="number" min="0" step="0.1" /></div>
+          <div class="field"><label for="f-edition">Edição</label><input id="f-edition" name="edition" placeholder="Edição de 30" /></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Comercial</legend>
+        <div class="form-grid">
+          <div class="field"><label for="f-price">Preço (BRL) *</label><input id="f-price" name="priceBRL" type="number" min="0" step="1" required /></div>
+          <div class="field">
+            <label for="f-status">Disponibilidade *</label>
+            <select id="f-status" name="status" required>
+              <option value="available">Disponível</option>
+              <option value="reserved">Reservada</option>
+              <option value="sold">Vendida</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Textos</legend>
+        <div class="field full"><label for="f-desc">Descrição</label><textarea id="f-desc" name="description" rows="3"></textarea></div>
+        <div class="form-grid">
+          <div class="field"><label for="f-exh">Exposições (uma por linha)</label><textarea id="f-exh" name="exhibitions" rows="3"></textarea></div>
+          <div class="field"><label for="f-lit">Literatura (uma por linha)</label><textarea id="f-lit" name="literature" rows="3"></textarea></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Imagem</legend>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f-image">Arquivo de imagem</label>
+            <input id="f-image" name="image" type="file" accept="image/*" />
+            <small class="muted">Sem imagem, será gerada uma composição com o padrão abaixo.</small>
+          </div>
+          <div class="field">
+            <label for="f-kind">Padrão gerado</label>
+            <select id="f-kind" name="kind">
+              <option value="rings">Anéis</option><option value="waves">Ondas</option><option value="squares">Quadrados</option>
+              <option value="bars">Barras</option><option value="sphere">Esfera</option><option value="glow">Luz</option>
+              <option value="checker">Tabuleiro</option><option value="mobile">Placas</option>
+            </select>
+          </div>
+        </div>
+        <div class="preview-wrap"><div id="add-preview" class="add-preview"></div></div>
+      </fieldset>
+
+      <p class="form-status" id="add-status" role="status"></p>
+      <div class="modal-foot">
+        <button type="button" class="link-btn" data-close>Cancelar</button>
+        <button type="submit" class="btn">Salvar obra</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Login -->
+  <div id="login-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="login-title" hidden>
+    <form id="login-form" class="modal-card login-card" novalidate>
+      <div class="modal-head">
+        <h2 id="login-title">Entrar</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Fechar">✕</button>
+      </div>
+      <p class="muted">Acesso restrito à equipe da galeria para gerenciar obras.</p>
+      <div class="field"><label for="l-user">Usuário</label><input id="l-user" name="user" required autocomplete="username" /></div>
+      <div class="field"><label for="l-pass">Senha</label><input id="l-pass" name="password" type="password" required autocomplete="current-password" /></div>
+      <label class="toggle remember"><input type="checkbox" name="remember" /> Manter conectado neste navegador</label>
+      <p class="form-status" id="login-status" role="status"></p>
+      <div class="modal-foot">
+        <button type="button" class="link-btn" data-close>Cancelar</button>
+        <button type="submit" class="btn">Entrar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

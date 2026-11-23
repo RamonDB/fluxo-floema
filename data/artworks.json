@@ -1,1 +1,33 @@
-[]
+[
+  {
+    "id": "OBR-0001",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "o Olho",
+    "year": 2026,
+    "type": "Pintura",
+    "medium": "Madeira sobre pedra",
+    "signed": "",
+    "edition": "30",
+    "height": 170,
+    "width": 100,
+    "depth": 2,
+    "priceBRL": 30000,
+    "status": "available",
+    "description": "Descrição",
+    "exhibitions": [
+      "Exposição1"
+    ],
+    "literature": [
+      "Literatura1"
+    ],
+    "createdAt": "2026-11-23T22:13:33.939Z",
+    "images": [
+      "images/obras/OBR-0001-mwttoghe-1.jpg",
+      "images/obras/OBR-0001-mwttoghe-2.jpg",
+      "images/obras/OBR-0001-mwttoghe-3.jpg",
+      "images/obras/OBR-0001-mwttoghe-4.jpg",
+      "images/obras/OBR-0001-mwttoghe-5.jpg"
+    ]
+  }
+]

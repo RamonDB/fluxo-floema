@@ -136,11 +136,9 @@
         </label>
         <div class="manage" id="manage" hidden>
           <button id="btn-add" class="btn btn-small">+ Adicionar obra</button>
-          <button id="btn-export" class="link-btn">Exportar</button>
-          <label class="link-btn" for="import-file">Importar</label>
-          <input id="import-file" type="file" accept="application/json,.json" hidden />
         </div>
       </div>
+      <p id="publish-status" class="publish-status" role="status" hidden></p>
     </section>
 
     <section id="obras" class="container grid" aria-live="polite"></section>
@@ -317,12 +315,12 @@
       </fieldset>
 
       <fieldset>
-        <legend>Imagem</legend>
+        <legend>Fotos</legend>
         <div class="form-grid">
           <div class="field">
-            <label for="f-image">Arquivo de imagem</label>
-            <input id="f-image" name="image" type="file" accept="image/*" />
-            <small class="muted">Sem imagem, será gerada uma composição com o padrão abaixo.</small>
+            <label for="f-image">Arquivos de imagem (até 8)</label>
+            <input id="f-image" name="image" type="file" accept="image/*" multiple />
+            <small class="muted">Selecione uma ou várias fotos; com mais de uma, a obra vira um carrossel. A primeira é a capa. Sem fotos, será gerada uma composição com o padrão ao lado.</small>
           </div>
           <div class="field">
             <label for="f-kind">Padrão gerado</label>
@@ -334,6 +332,7 @@
           </div>
         </div>
         <div class="preview-wrap"><div id="add-preview" class="add-preview"></div></div>
+        <ul id="photo-list" class="photo-list" aria-label="Fotos selecionadas"></ul>
       </fieldset>
 
       <p class="form-status" id="add-status" role="status"></p>
@@ -351,9 +350,20 @@
         <h2 id="login-title">Entrar</h2>
         <button type="button" class="icon-btn" data-close aria-label="Fechar">✕</button>
       </div>
-      <p class="muted">Acesso restrito à equipe da galeria para gerenciar obras.</p>
-      <div class="field"><label for="l-user">Usuário</label><input id="l-user" name="user" required autocomplete="username" /></div>
-      <div class="field"><label for="l-pass">Senha</label><input id="l-pass" name="password" type="password" required autocomplete="current-password" /></div>
+      <p class="muted">Acesso restrito à equipe para publicar obras. Entre com um token do GitHub que tenha permissão de escrita no repositório do site.</p>
+      <div class="field">
+        <label for="l-token">Token do GitHub</label>
+        <input id="l-token" name="token" type="password" required autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+      </div>
+      <details class="token-help">
+        <summary>Como gerar o token</summary>
+        <ol>
+          <li>No GitHub, abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens → Generate new token</a>.</li>
+          <li>Em <strong>Repository access</strong>, escolha <em>Only select repositories</em> e selecione <span id="token-repo"></span>.</li>
+          <li>Em <strong>Permissions → Contents</strong>, escolha <em>Read and write</em>.</li>
+          <li>Gere o token, copie e cole aqui. Guarde-o em local seguro.</li>
+        </ol>
+      </details>
       <label class="toggle remember"><input type="checkbox" name="remember" /> Manter conectado neste navegador</label>
       <p class="form-status" id="login-status" role="status"></p>
       <div class="modal-foot">

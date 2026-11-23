@@ -146,8 +146,9 @@
 
   // variant: "main" | "detail"
   window.renderArtwork = function (work, variant = "main") {
-    if (work.image) {
-      return `<img class="art-img ${variant === "detail" ? "detail" : ""}" src="${escAttr(work.image)}" alt="${escAttr(work.title)}" loading="lazy" />`;
+    const photo = work.image || (Array.isArray(work.images) && work.images[0]);
+    if (photo) {
+      return `<img class="art-img ${variant === "detail" ? "detail" : ""}" src="${escAttr(photo)}" alt="${escAttr(work.title)}" loading="lazy" />`;
     }
     const w = work.width * SCALE, h = work.height * SCALE;
     const kind = painters[work.art && work.art.kind] ? work.art.kind : "rings";

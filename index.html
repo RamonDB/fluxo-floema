@@ -352,20 +352,19 @@
         <h2 id="login-title">Entrar</h2>
         <button type="button" class="icon-btn" data-close aria-label="Fechar">✕</button>
       </div>
-      <p class="muted">Acesso restrito à equipe para publicar obras. Entre com um token do GitHub que tenha permissão de escrita no repositório do site.</p>
-      <div class="field">
-        <label for="l-token">Token do GitHub</label>
-        <input id="l-token" name="token" type="password" required autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+      <p class="muted">Acesso restrito à equipe para publicar obras.</p>
+      <div class="field"><label for="l-user">Usuário</label><input id="l-user" name="user" required autocomplete="username" /></div>
+      <div class="field"><label for="l-pass">Senha</label><input id="l-pass" name="password" type="password" required autocomplete="current-password" /></div>
+      <p id="token-saved" class="token-saved" hidden>
+        Token do GitHub já salvo neste navegador<span id="token-saved-login"></span>, protegido pela sua senha.
+        <button type="button" id="btn-new-token" class="link-btn">Usar outro token</button>
+      </p>
+      <div id="token-block">
+        <div class="field">
+          <label for="l-token">Token do GitHub <small class="muted">(só na primeira vez neste navegador)</small></label>
+          <input id="l-token" name="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+        </div>
       </div>
-      <details class="token-help">
-        <summary>Como gerar o token</summary>
-        <ol>
-          <li>No GitHub, abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens → Generate new token</a>.</li>
-          <li>Em <strong>Repository access</strong>, escolha <em>Only select repositories</em> e selecione <span id="token-repo"></span>.</li>
-          <li>Em <strong>Permissions → Contents</strong>, escolha <em>Read and write</em>.</li>
-          <li>Gere o token, copie e cole aqui. Guarde-o em local seguro.</li>
-        </ol>
-      </details>
       <label class="toggle remember"><input type="checkbox" name="remember" /> Manter conectado neste navegador</label>
       <p class="form-status" id="login-status" role="status"></p>
       <div class="modal-foot">

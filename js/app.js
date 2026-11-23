@@ -781,9 +781,55 @@
 
   $("#year").textContent = new Date().getFullYear();
   /* ---------- Auth ---------- */
-  // The token is kept only in this browser (sessionStorage, or localStorage with "manter conectado").
+  // Login = usuário + senha (hash em data.js). O token do GitHub é informado só na primeira vez em
+  // cada navegador e fica salvo nele criptografado com a senha (PBKDF2 + AES-GCM).
   const AUTH_KEY = "fluxo.ghSession.v1";
+  const VAULT_KEY = `fluxo.ghVault.v1:${GH.owner}/${GH.repo}`;
+  const ADMIN = G.admin;
   const isAdmin = () => !!session;
+
+  const enc = new TextEncoder();
+  const toB64 = (u8) => btoa(String.fromCharCode(...u8));
+  const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  function requireCrypto() {
+    if (!(window.crypto && crypto.subtle)) throw Object.assign(new Error("Este navegador não permite login neste endereço (use HTTPS)."), { status: 0 });
+  }
+  async function sha256(text) {
+    requireCrypto();
+    const buf = await crypto.subtle.digest("SHA-256", enc.encode(text));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function deriveKey(password, salt) {
+    const base = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" },
+      base,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  }
+  function readVault() {
+    try {
+      const v = JSON.parse(localStorage.getItem(VAULT_KEY) || "null");
+      return v && v.salt && v.iv && v.ct ? v : null;
+    } catch {
+      return null;
+    }
+  }
+  async function saveVault(token, password, login) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKey(password, salt);
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(token)));
+    localStorage.setItem(VAULT_KEY, JSON.stringify({ v: 1, salt: toB64(salt), iv: toB64(iv), ct: toB64(ct), login }));
+  }
+  async function openVault(vault, password) {
+    const key = await deriveKey(password, fromB64(vault.salt));
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(vault.iv) }, key, fromB64(vault.ct));
+    return new TextDecoder().decode(pt);
+  }
 
   function readSession() {
     for (const store of [sessionStorage, localStorage]) {
@@ -814,14 +860,26 @@
   const loginModal = $("#login-modal");
   const loginForm = $("#login-form");
   const loginStatus = $("#login-status");
-  $("#token-repo").textContent = `${GH.owner}/${GH.repo}`;
+
+  function setLoginStatus(text, kind = "") {
+    loginStatus.textContent = text;
+    loginStatus.className = `form-status ${kind}`;
+  }
+  // Shows the token field only when this browser has no saved token (or the user wants to replace it).
+  function showTokenField(show) {
+    const vault = readVault();
+    const needToken = show || !vault;
+    $("#token-block").hidden = !needToken;
+    $("#token-saved").hidden = needToken;
+    $("#token-saved-login").textContent = vault && vault.login ? ` (conta ${vault.login})` : "";
+  }
 
   function openLogin(message = "") {
     loginForm.reset();
-    loginStatus.textContent = message;
-    loginStatus.className = `form-status ${message ? "error" : ""}`;
+    setLoginStatus(message, message ? "error" : "");
+    showTokenField(false);
     openDialog(loginModal);
-    loginForm.elements.token.focus();
+    loginForm.elements.user.focus();
   }
 
   function logout(message = "") {
@@ -835,6 +893,10 @@
   }
 
   $("#btn-login").addEventListener("click", () => openLogin());
+  $("#btn-new-token").addEventListener("click", () => {
+    showTokenField(true);
+    loginForm.elements.token.focus();
+  });
   $$("[data-close]", loginModal).forEach((b) => b.addEventListener("click", () => closeDialog(loginModal)));
   loginModal.addEventListener("click", (e) => e.target === loginModal && closeDialog(loginModal));
 
@@ -842,23 +904,65 @@
     e.preventDefault();
     const f = loginForm.elements;
     const submit = $("button[type=submit]", loginForm);
-    const token = f.token.value.trim();
-    if (!token) {
-      loginStatus.textContent = "Cole o token do GitHub.";
-      loginStatus.className = "form-status error";
-      return;
+    const user = f.user.value.trim(), password = f.password.value;
+    const askingToken = !$("#token-block").hidden;
+    const typedToken = f.token.value.trim();
+    if (!user || !password) return setLoginStatus("Informe usuário e senha.", "error");
+    if (askingToken && !typedToken) {
+      setLoginStatus("Cole o token do GitHub (necessário só na primeira vez neste navegador).", "error");
+      return f.token.focus();
     }
+
     submit.disabled = true;
-    loginStatus.textContent = "Verificando acesso ao repositório…";
-    loginStatus.className = "form-status";
     const previous = session;
-    session = { token, login: "" };
     try {
-      const [user, repo] = await Promise.all([gh("https://api.github.com/user"), gh("")]);
-      if (repo.permissions && !repo.permissions.push) {
-        throw Object.assign(new Error(), { status: 403 });
+      if (user !== ADMIN.user || (await sha256(`${ADMIN.salt}:${password}`)) !== ADMIN.passwordHash) {
+        setLoginStatus("Usuário ou senha inválidos.", "error");
+        f.password.value = "";
+        f.password.focus();
+        await new Promise((r) => setTimeout(r, 1200));
+        return;
       }
-      session = { token, login: user.login };
+
+      let token = typedToken;
+      if (!askingToken) {
+        try {
+          token = await openVault(readVault(), password);
+        } catch {
+          showTokenField(true);
+          setLoginStatus("Não foi possível abrir o token salvo neste navegador (a senha mudou?). Cole o token novamente.", "error");
+          return f.token.focus();
+        }
+      }
+
+      setLoginStatus("Verificando acesso ao repositório…");
+      session = { token, login: "" };
+      let ghUser;
+      try {
+        const [u, repo] = await Promise.all([gh("https://api.github.com/user"), gh("")]);
+        if (repo.permissions && !repo.permissions.push) throw Object.assign(new Error(), { status: 403 });
+        ghUser = u;
+      } catch (err) {
+        session = previous;
+        const msg =
+          err.status === 401
+            ? "Token inválido ou expirado."
+            : err.status === 403 || err.status === 404
+            ? `Este token não tem acesso de escrita a ${GH.owner}/${GH.repo}.`
+            : "Não foi possível falar com o GitHub. Verifique a conexão.";
+        if (!askingToken && (err.status === 401 || err.status === 403 || err.status === 404)) {
+          // The saved token no longer works: forget it and ask for a new one.
+          localStorage.removeItem(VAULT_KEY);
+          showTokenField(true);
+          setLoginStatus(`${msg} Cole um novo token.`, "error");
+          return f.token.focus();
+        }
+        setLoginStatus(msg, "error");
+        return askingToken ? f.token.focus() : undefined;
+      }
+
+      if (askingToken) await saveVault(token, password, ghUser.login);
+      session = { token, login: ghUser.login };
       (f.remember.checked ? localStorage : sessionStorage).setItem(AUTH_KEY, JSON.stringify(session));
       closeDialog(loginModal);
       applyAuth();
@@ -866,14 +970,7 @@
       $("#btn-logout").focus();
     } catch (err) {
       session = previous;
-      loginStatus.textContent =
-        err.status === 401
-          ? "Token inválido ou expirado."
-          : err.status === 403 || err.status === 404
-          ? `Este token não tem acesso de escrita a ${GH.owner}/${GH.repo}.`
-          : "Não foi possível falar com o GitHub. Verifique a conexão.";
-      loginStatus.className = "form-status error";
-      f.token.focus();
+      setLoginStatus(err.status === 0 ? err.message : "Não foi possível entrar. Tente novamente.", "error");
     } finally {
       submit.disabled = false;
     }

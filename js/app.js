@@ -13,6 +13,7 @@
   // write the repository directly through the GitHub API.
   const GH = G.github;
   let works = [];
+  let content = {}; // overrides published in data/content.json
   let headSha = null; // latest commit read by an editor; used to show not-yet-deployed photos
   const allWorks = () => works;
 
@@ -42,18 +43,37 @@
     const ref = await gh(`/git/ref/heads/${GH.branch}`);
     const sha = ref.object.sha;
     const commit = await gh(`/git/commits/${sha}`);
-    let list = [];
-    try {
-      const file = await gh(`/contents/data/artworks.json?ref=${sha}`);
-      list = JSON.parse(decodeB64(file.content));
-    } catch (e) {
-      if (e.status !== 404) throw e;
-    }
-    return { sha, treeSha: commit.tree.sha, list: Array.isArray(list) ? list.filter(isValidWork) : [] };
+    const readJson = async (path, fallback) => {
+      try {
+        const file = await gh(`/contents/${path}?ref=${sha}`);
+        return JSON.parse(decodeB64(file.content));
+      } catch (e) {
+        if (e.status !== 404) throw e;
+        return fallback;
+      }
+    };
+    const [list, rawContent] = await Promise.all([readJson("data/artworks.json", []), readJson("data/content.json", {})]);
+    return {
+      sha,
+      treeSha: commit.tree.sha,
+      list: Array.isArray(list) ? list.filter(isValidWork) : [],
+      content: cleanContent(rawContent)
+    };
   }
 
-  // Creates a single commit with the updated artworks.json plus added/removed photo files.
-  async function commitChange({ mutate, addFiles = [], deletePaths = [], message }) {
+  async function existsAt(path, sha) {
+    try {
+      await gh(`/contents/${path}?ref=${sha}`);
+      return true;
+    } catch (e) {
+      if (e.status === 404) return false;
+      throw e;
+    }
+  }
+
+  // Creates a single commit with the updated JSON files plus added/removed image files.
+  // mutateWorks / mutateContent receive the latest published data and return the new data.
+  async function commitChange({ mutateWorks, mutateContent, addFiles = [], deletePaths = [], message }) {
     const uploaded = [];
     for (const f of addFiles) {
       const blob = await gh("/git/blobs", { method: "POST", body: JSON.stringify({ content: f.base64, encoding: "base64" }) });
@@ -61,16 +81,19 @@
     }
     for (let attempt = 0; ; attempt++) {
       const remote = await readRemote();
-      const next = mutate(remote.list);
+      const nextWorks = mutateWorks ? mutateWorks(remote.list) : remote.list;
+      const nextContent = mutateContent ? mutateContent(remote.content) : remote.content;
+      const entries = [];
+      const putJson = (path, data) => entries.push({ path, mode: "100644", type: "blob", content: JSON.stringify(data, null, 2) + "\n" });
+      if (mutateWorks) putJson("data/artworks.json", nextWorks);
+      if (mutateContent) putJson("data/content.json", nextContent);
+      const existing = [];
+      for (const p of deletePaths) if (await existsAt(p, remote.sha)) existing.push(p);
       const tree = await gh("/git/trees", {
         method: "POST",
         body: JSON.stringify({
           base_tree: remote.treeSha,
-          tree: [
-            { path: "data/artworks.json", mode: "100644", type: "blob", content: JSON.stringify(next, null, 2) + "\n" },
-            ...uploaded,
-            ...deletePaths.map((p) => ({ path: p, mode: "100644", type: "blob", sha: null }))
-          ]
+          tree: [...entries, ...uploaded, ...existing.map((p) => ({ path: p, mode: "100644", type: "blob", sha: null }))]
         })
       });
       const commit = await gh("/git/commits", {
@@ -79,7 +102,7 @@
       });
       try {
         await gh(`/git/refs/heads/${GH.branch}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha }) });
-        return { list: next, sha: commit.sha };
+        return { list: nextWorks, content: nextContent, sha: commit.sha };
       } catch (e) {
         // 422 = someone else published in the meantime; retry on top of the new commit.
         if (e.status !== 422 || attempt >= 2) throw e;
@@ -93,15 +116,22 @@
         const remote = await readRemote();
         headSha = remote.sha;
         works = remote.list;
+        content = remote.content;
       } else {
-        const res = await fetch(`data/artworks.json?t=${Date.now()}`, { cache: "no-store" });
-        const data = res.ok ? await res.json() : [];
+        const stamp = Date.now();
+        const [wr, cr] = await Promise.all([
+          fetch(`data/artworks.json?t=${stamp}`, { cache: "no-store" }),
+          fetch(`data/content.json?t=${stamp}`, { cache: "no-store" })
+        ]);
+        const data = wr.ok ? await wr.json() : [];
         works = Array.isArray(data) ? data.filter(isValidWork) : [];
+        content = cr.ok ? cleanContent(await cr.json().catch(() => ({}))) : {};
       }
     } catch (e) {
-      console.warn("Não foi possível carregar as obras.", e);
+      console.warn("Não foi possível carregar o conteúdo publicado.", e);
       if (session && (e.status === 401 || e.status === 403)) return logout("Sua sessão expirou ou o token perdeu acesso. Entre novamente.");
     }
+    renderContent();
     refresh();
   }
 
@@ -432,7 +462,7 @@
     btn.textContent = "Removendo…";
     try {
       const result = await commitChange({
-        mutate: (list) => list.filter((x) => x.id !== w.id),
+        mutateWorks: (list) => list.filter((x) => x.id !== w.id),
         deletePaths: photosOf(w).filter((p) => p.startsWith("images/obras/")),
         message: `Remove obra ${w.id} — ${w.title}`
       });
@@ -694,7 +724,7 @@
       const result = await commitChange({
         addFiles: files,
         message: `Adiciona obra ${id} — ${base.title}`,
-        mutate: (list) => {
+        mutateWorks: (list) => {
           // Re-check against the latest repository state (another editor may have published).
           if (typedId && list.some((w) => String(w.id).toLowerCase() === typedId.toLowerCase())) {
             throw Object.assign(new Error(`Já existe uma obra com o código "${typedId}".`), { status: 0 });
@@ -722,8 +752,390 @@
     }
   });
 
+  /* ---------- Editable site texts ---------- */
+  // Defaults live in js/content-default.js; texts edited by the admin are stored as overrides in
+  // data/content.json. Text format: blank line = new paragraph, *text* = italic (no HTML allowed).
+  const DEFAULTS = window.DEFAULT_CONTENT;
+  const MAX_ARTISTS = 12;
+  const PORTRAIT_KINDS = ["sphere", "rings", "waves", "squares", "checker", "bars", "glow", "mobile"];
+
+  const inline = (t) => esc(t).replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+  const paragraphsOf = (t) =>
+    String(t || "")
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .map((p) => inline(p).replace(/\n/g, "<br>"));
+
+  const isArtistPhoto = (p) => typeof p === "string" && p.startsWith("images/artistas/") && isSafeSrc(p);
+
+  // Validates/normalises one section coming from the repository or from a saved draft.
+  function sanitizeSection(section, d) {
+    if (!d || typeof d !== "object") return null;
+    const s = (v, max) => (typeof v === "string" ? v.slice(0, max) : "");
+    if (section === "curatorial") {
+      return { title: s(d.title, 200), artists: s(d.artists, 300), body: s(d.body, 30000), author: s(d.author, 200) };
+    }
+    if (!Array.isArray(d.items)) return null;
+    return {
+      title: s(d.title, 200),
+      items: d.items
+        .filter((it) => it && typeof it === "object")
+        .slice(0, MAX_ARTISTS)
+        .map((it, i) => ({
+          id: s(it.id, 40) || `a${i}`,
+          name: s(it.name, 200),
+          line: s(it.line, 300),
+          text: s(it.text, 10000),
+          photo: isArtistPhoto(it.photo) ? it.photo : "",
+          newPhoto: it.newPhoto && typeof it.newPhoto.src === "string" && /^data:image\//.test(it.newPhoto.src) ? { src: it.newPhoto.src } : null
+        }))
+    };
+  }
+
+  function cleanContent(raw) {
+    const out = {};
+    if (!raw || typeof raw !== "object") return out;
+    const cur = sanitizeSection("curatorial", raw.curatorial);
+    if (cur) out.curatorial = cur;
+    const art = sanitizeSection("artists", raw.artists);
+    if (art) out.artists = { ...art, items: art.items.map(({ newPhoto: _, ...it }) => it) };
+    return out;
+  }
+
+  const curatorialNow = () => ({ ...DEFAULTS.curatorial, ...(content.curatorial || {}) });
+  const artistsNow = () => content.artists || DEFAULTS.artists;
+
+  function renderContent() {
+    const c = curatorialNow();
+    const paras = paragraphsOf(c.body);
+    const cur = $("#curatorial");
+    cur.innerHTML = `
+      <header class="curatorial-head">
+        ${c.title ? `<h2 id="curatorial-title">${inline(c.title)}</h2>` : ""}
+        ${c.artists ? `<p class="curatorial-artists">${inline(c.artists)}</p>` : ""}
+      </header>
+      <div class="curatorial-body">
+        ${paras.map((p, i) => `<p${i === 0 ? ' class="lead"' : ""}>${p}</p>`).join("")}
+        ${c.author ? `<p class="curatorial-author">${inline(c.author)}</p>` : ""}
+      </div>`;
+    cur.classList.remove("content-pending");
+
+    const a = artistsNow();
+    $("#artists-title").textContent = a.title;
+    const list = $("#artists-list");
+    list.innerHTML = a.items
+      .map((it, i) => {
+        const media = it.photo
+          ? `<img class="artist-photo" src="${esc(srcOf(it.photo))}" alt="${esc(it.name)}" loading="lazy" />`
+          : renderArtwork({ id: `portrait-${i}`, title: it.name, width: 130, height: 130, art: { kind: PORTRAIT_KINDS[i % PORTRAIT_KINDS.length] } });
+        return `
+        <article class="artist-item">
+          <div class="artist-portrait ${it.photo ? "has-photo" : ""}" ${it.photo ? "" : 'aria-hidden="true"'}>${media}</div>
+          <div class="artist-text">
+            ${it.name ? `<h3>${inline(it.name)}</h3>` : ""}
+            ${it.line ? `<p class="meta">${inline(it.line)}</p>` : ""}
+            ${paragraphsOf(it.text).map((p) => `<p>${p}</p>`).join("")}
+          </div>
+        </article>`;
+      })
+      .join("");
+    list.classList.remove("content-pending");
+  }
+
+  /* Editor */
+  const cmodal = $("#content-modal");
+  const cform = $("#content-form");
+  const cfields = $("#content-fields");
+  const cstatus = $("#content-status");
+  let editor = null; // { section, data }
+  let contentDraftTimer = null;
+  const draftKey = (section) => `fluxo.contentDraft.v1:${section}`;
+  const SECTION_LABEL = { curatorial: "texto da exposição", artists: "artistas" };
+
+  function setCstatus(text, kind = "") {
+    cstatus.textContent = text;
+    cstatus.className = `form-status ${kind}`;
+  }
+  const newArtistItem = () => ({ id: `a${Math.random().toString(36).slice(2, 8)}`, name: "", line: "", text: "", photo: "", newPhoto: null });
+  const cloneForEdit = (section) => {
+    if (section === "curatorial") return { ...curatorialNow() };
+    const a = artistsNow();
+    return { title: a.title, items: a.items.map((it) => ({ ...it, newPhoto: null })) };
+  };
+
+  function saveContentDraft() {
+    clearTimeout(contentDraftTimer);
+    if (!editor) return;
+    const key = draftKey(editor.section);
+    try {
+      localStorage.setItem(key, JSON.stringify(editor.data));
+    } catch {
+      // Photos too big for browser storage: keep only the text.
+      try {
+        const d = editor.data;
+        localStorage.setItem(key, JSON.stringify(d.items ? { ...d, items: d.items.map((it) => ({ ...it, newPhoto: null })) } : d));
+      } catch {}
+    }
+  }
+  const saveContentDraftSoon = () => {
+    clearTimeout(contentDraftTimer);
+    contentDraftTimer = setTimeout(saveContentDraft, 300);
+  };
+  function readContentDraft(section) {
+    try {
+      return sanitizeSection(section, JSON.parse(localStorage.getItem(draftKey(section)) || "null"));
+    } catch {
+      return null;
+    }
+  }
+  function clearContentDraft(section) {
+    clearTimeout(contentDraftTimer);
+    localStorage.removeItem(draftKey(section));
+  }
+
+  function artistEditor(it, i, total) {
+    const thumb = it.newPhoto
+      ? `<img src="${esc(it.newPhoto.src)}" alt="" />`
+      : it.photo
+      ? `<img src="${esc(srcOf(it.photo))}" alt="" />`
+      : `<span class="muted">Sem foto</span>`;
+    const hasPhoto = !!(it.newPhoto || it.photo);
+    return `
+      <fieldset class="artist-edit" data-i="${i}">
+        <legend>Artista ${i + 1}</legend>
+        <div class="artist-edit-tools">
+          <button type="button" class="link-btn" data-act="up" ${i === 0 ? "disabled" : ""} aria-label="Mover para cima">↑ Subir</button>
+          <button type="button" class="link-btn" data-act="down" ${i === total - 1 ? "disabled" : ""} aria-label="Mover para baixo">↓ Descer</button>
+          <button type="button" class="link-btn danger" data-act="remove">Remover artista</button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label for="ae-name-${i}">Nome *</label><input id="ae-name-${i}" data-k="name" value="${esc(it.name)}" /></div>
+          <div class="field"><label for="ae-line-${i}">Linha de apresentação</label><input id="ae-line-${i}" data-k="line" value="${esc(it.line)}" placeholder="Cidade, ano de nascimento" /></div>
+        </div>
+        <div class="field full" style="margin-top:16px"><label for="ae-text-${i}">Texto</label><textarea id="ae-text-${i}" data-k="text" rows="6">${esc(it.text)}</textarea></div>
+        <div class="artist-edit-photo">
+          <div class="artist-edit-thumb">${thumb}</div>
+          <div class="artist-edit-photo-actions">
+            <label class="link-btn" for="ae-photo-${i}">${hasPhoto ? "Trocar foto" : "Enviar foto"}</label>
+            <input id="ae-photo-${i}" type="file" accept="image/*" data-photo hidden />
+            ${hasPhoto ? `<button type="button" class="link-btn" data-act="clear-photo">Remover foto</button>` : ""}
+          </div>
+        </div>
+      </fieldset>`;
+  }
+
+  function renderEditor() {
+    const d = editor.data;
+    if (editor.section === "curatorial") {
+      cfields.innerHTML = `
+        <div class="form-grid">
+          <div class="field"><label for="ce-title">Título</label><input id="ce-title" data-k="title" value="${esc(d.title)}" /></div>
+          <div class="field"><label for="ce-artists">Artistas (abaixo do título)</label><input id="ce-artists" data-k="artists" value="${esc(d.artists)}" /></div>
+        </div>
+        <div class="field full" style="margin-top:16px"><label for="ce-body">Texto</label><textarea id="ce-body" data-k="body" rows="16">${esc(d.body)}</textarea></div>
+        <div class="field" style="margin-top:16px"><label for="ce-author">Assinatura</label><input id="ce-author" data-k="author" value="${esc(d.author)}" /></div>`;
+    } else {
+      cfields.innerHTML = `
+        <div class="field"><label for="ae-title">Título da seção</label><input id="ae-title" data-k="title" value="${esc(d.title)}" /></div>
+        <div class="artist-edit-list">${d.items.map((it, i) => artistEditor(it, i, d.items.length)).join("")}</div>
+        <button type="button" class="link-btn" id="btn-add-artist" ${d.items.length >= MAX_ARTISTS ? "disabled" : ""}>+ Adicionar artista</button>`;
+    }
+  }
+
+  function openContentEditor(section) {
+    if (!isAdmin()) return openLogin();
+    const draft = readContentDraft(section);
+    editor = { section, data: draft || cloneForEdit(section) };
+    $("#content-title").textContent = section === "curatorial" ? "Editar texto da exposição" : "Editar artistas";
+    setCstatus(draft ? "Rascunho restaurado: suas últimas alterações não publicadas foram recuperadas." : "");
+    $("#btn-content-discard").hidden = !draft;
+    renderEditor();
+    openDialog(cmodal);
+    const first = $("input, textarea", cfields);
+    first && first.focus();
+  }
+
+  const busyContent = (on) => {
+    cform.classList.toggle("busy", on);
+    $$("button, input, select, textarea", cform).forEach((el) => {
+      if (on) (el.dataset.wasDisabled = el.disabled, (el.disabled = true));
+      else el.disabled = el.dataset.wasDisabled === "true";
+    });
+  };
+
+  $("#btn-edit-curatorial").addEventListener("click", () => openContentEditor("curatorial"));
+  $("#btn-edit-artists").addEventListener("click", () => openContentEditor("artists"));
+  $$("[data-close]", cmodal).forEach((b) => b.addEventListener("click", () => !cform.classList.contains("busy") && closeDialog(cmodal)));
+  cmodal.addEventListener("click", (e) => e.target === cmodal && !cform.classList.contains("busy") && closeDialog(cmodal));
+
+  cfields.addEventListener("input", (e) => {
+    const k = e.target.dataset.k;
+    if (!k || !editor) return;
+    const block = e.target.closest(".artist-edit");
+    if (block) editor.data.items[+block.dataset.i][k] = e.target.value;
+    else editor.data[k] = e.target.value;
+    saveContentDraftSoon();
+  });
+
+  cfields.addEventListener("click", (e) => {
+    if (!editor) return;
+    if (e.target.id === "btn-add-artist") {
+      if (editor.data.items.length >= MAX_ARTISTS) return;
+      editor.data.items.push(newArtistItem());
+      renderEditor();
+      saveContentDraft();
+      const names = $$('[data-k="name"]', cfields);
+      names[names.length - 1].focus();
+      return;
+    }
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const i = +btn.closest(".artist-edit").dataset.i;
+    const items = editor.data.items;
+    switch (btn.dataset.act) {
+      case "up":
+        if (i > 0) [items[i - 1], items[i]] = [items[i], items[i - 1]];
+        break;
+      case "down":
+        if (i < items.length - 1) [items[i + 1], items[i]] = [items[i], items[i + 1]];
+        break;
+      case "remove":
+        if (!confirm(`Remover ${items[i].name ? `"${items[i].name}"` : "este artista"} da lista? A mudança só vale depois de salvar.`)) return;
+        items.splice(i, 1);
+        break;
+      case "clear-photo":
+        items[i].photo = "";
+        items[i].newPhoto = null;
+        break;
+    }
+    renderEditor();
+    saveContentDraft();
+  });
+
+  cfields.addEventListener("change", async (e) => {
+    if (!editor || !e.target.matches("[data-photo]")) return;
+    const i = +e.target.closest(".artist-edit").dataset.i;
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const p = await resizeImage(file, 1200);
+      editor.data.items[i].newPhoto = { src: p.src };
+      setCstatus("");
+    } catch (err) {
+      setCstatus(err.message, "error");
+    }
+    renderEditor();
+    saveContentDraft();
+  });
+
+  $("#btn-content-discard").addEventListener("click", () => {
+    if (!editor || cform.classList.contains("busy")) return;
+    clearContentDraft(editor.section);
+    editor.data = cloneForEdit(editor.section);
+    $("#btn-content-discard").hidden = true;
+    setCstatus("");
+    renderEditor();
+  });
+
+  cform.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || !editor || cform.classList.contains("busy")) return;
+    const { section, data } = editor;
+    let final;
+    let addFiles = [];
+    let deletePaths = [];
+
+    if (section === "curatorial") {
+      final = { title: data.title.trim(), artists: data.artists.trim(), body: data.body.trim(), author: data.author.trim() };
+      if (!final.title && !final.body) return setCstatus("Preencha ao menos o título ou o texto.", "error");
+    } else {
+      const bad = data.items.findIndex((it) => !it.name.trim());
+      if (bad >= 0) {
+        setCstatus("Informe o nome de cada artista.", "error");
+        return $(`#ae-name-${bad}`).focus();
+      }
+      const stamp = Date.now().toString(36);
+      const items = data.items.map((it, i) => {
+        let photo = it.photo;
+        if (it.newPhoto) {
+          photo = `images/artistas/${slug(it.name)}-${stamp}-${i + 1}.jpg`;
+          addFiles.push({ path: photo, base64: it.newPhoto.src.split(",")[1] });
+        }
+        return { id: it.id, name: it.name.trim(), line: it.line.trim(), text: it.text.trim(), photo };
+      });
+      final = { title: data.title.trim(), items };
+      deletePaths = artistsNow().items.map((it) => it.photo).filter(isArtistPhoto).filter((p) => !items.some((it) => it.photo === p));
+    }
+
+    busyContent(true);
+    setCstatus(addFiles.length ? `Publicando texto e ${addFiles.length} foto(s)… não feche esta janela.` : "Publicando…");
+    try {
+      const result = await commitChange({
+        mutateContent: (c) => ({ ...c, [section]: final }),
+        addFiles,
+        deletePaths,
+        message: `Atualiza ${SECTION_LABEL[section]}`
+      });
+      content = result.content;
+      headSha = result.sha;
+      clearContentDraft(section);
+      busyContent(false);
+      closeDialog(cmodal);
+      renderContent();
+      publishStatus(`Texto atualizado. ${PUBLISHED_MSG}`, "ok");
+    } catch (err) {
+      setCstatus(ghErrorMessage(err), "error");
+    } finally {
+      busyContent(false);
+    }
+  });
+
+  $("#btn-content-restore").addEventListener("click", async () => {
+    if (!isAdmin() || !editor || cform.classList.contains("busy")) return;
+    const section = editor.section;
+    if (!confirm(`Restaurar ${section === "curatorial" ? "o texto da exposição" : "a seção de artistas"} para a versão original? O que está publicado será substituído para todos os visitantes.`)) return;
+    if (!content[section]) {
+      clearContentDraft(section);
+      editor.data = cloneForEdit(section);
+      $("#btn-content-discard").hidden = true;
+      renderEditor();
+      return setCstatus("O texto publicado já é o original.");
+    }
+    const deletePaths = section === "artists" ? (content.artists.items || []).map((it) => it.photo).filter(isArtistPhoto) : [];
+    busyContent(true);
+    setCstatus("Restaurando…");
+    try {
+      const result = await commitChange({
+        mutateContent: (c) => {
+          const next = { ...c };
+          delete next[section];
+          return next;
+        },
+        deletePaths,
+        message: `Restaura ${SECTION_LABEL[section]} para o original`
+      });
+      content = result.content;
+      headSha = result.sha;
+      clearContentDraft(section);
+      busyContent(false);
+      closeDialog(cmodal);
+      renderContent();
+      publishStatus(`Texto restaurado. ${PUBLISHED_MSG}`, "ok");
+    } catch (err) {
+      setCstatus(ghErrorMessage(err), "error");
+    } finally {
+      busyContent(false);
+    }
+  });
+
   /* ---------- Keyboard ---------- */
   document.addEventListener("keydown", (e) => {
+    if (!cmodal.hidden) {
+      if (e.key === "Escape") closeDialog(cmodal);
+      else if (e.key === "Tab") trapFocus(e, cmodal);
+      return;
+    }
     const loginModal = $("#login-modal");
     if (!loginModal.hidden) {
       if (e.key === "Escape") closeDialog(loginModal);
@@ -760,8 +1172,6 @@
     })
   );
 
-  // Decorative art, independent from the published artworks list.
-  $("#artist-portrait").innerHTML = renderArtwork({ id: "portrait", title: "", width: 130, height: 130, art: { kind: "sphere" } });
 
   /* ---------- Contact ---------- */
   $("#contact-form").addEventListener("submit", (e) => {
@@ -853,6 +1263,7 @@
       headSha = null;
       publishStatus("");
       if (!modal.hidden) closeDialog(modal);
+      if (!cmodal.hidden) closeDialog(cmodal);
     }
     if (!viewer.hidden) renderViewer();
   }

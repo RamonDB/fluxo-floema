@@ -386,5 +386,32 @@
       "images/obras/OBR-0017-mwuz0rw4-4.jpg",
       "images/obras/OBR-0017-mwuz0rw4-5.jpg"
     ]
+  },
+  {
+    "id": "OBR-0018",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "Tempo 8 (da série Notívagas)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Cerâmica e prata [Pottery and silver]",
+    "signed": "",
+    "edition": "",
+    "height": 55,
+    "width": 36,
+    "depth": 10,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:32:24.020Z",
+    "images": [
+      "images/obras/OBR-0018-mwuz2q8j-1.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-2.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-3.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-4.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-5.jpg"
+    ]
   }
 ]

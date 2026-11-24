@@ -359,5 +359,32 @@
     "images": [
       "images/obras/OBR-0016-mwuyys4s-1.jpg"
     ]
+  },
+  {
+    "id": "OBR-0017",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1999",
+    "title": "Solvejo (da série Fascículos)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Ceramica e vidro [Pottery and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 52,
+    "width": 8,
+    "depth": 9,
+    "priceBRL": 7500,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:30:52.853Z",
+    "images": [
+      "images/obras/OBR-0017-mwuz0rw4-1.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-2.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-3.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-4.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-5.jpg"
+    ]
   }
 ]

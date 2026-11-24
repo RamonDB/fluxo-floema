@@ -65,6 +65,7 @@
         </label>
         <div class="manage" id="manage" hidden>
           <button id="btn-add" class="btn btn-small">+ Adicionar obra</button>
+          <button id="btn-reorder" class="btn btn-small btn-ghost" type="button">Reordenar obras</button>
         </div>
       </div>
       <p id="publish-status" class="publish-status" role="status" hidden></p>
@@ -128,6 +129,13 @@
       </form>
     </section>
   </main>
+
+  <div id="reorder-bar" class="reorder-bar" role="region" aria-label="Reordenar obras" hidden>
+    <p id="reorder-hint" class="reorder-hint">Arraste os cards ou use as setas do teclado.</p>
+    <p id="reorder-live" class="sr-only" aria-live="polite"></p>
+    <button type="button" id="reorder-cancel" class="link-btn">Cancelar</button>
+    <button type="button" id="reorder-save" class="btn btn-small" disabled>Salvar ordem</button>
+  </div>
 
   <footer class="site-footer">
     <div class="container footer-inner">

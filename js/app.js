@@ -17,9 +17,10 @@
   const REMOTE_READ = GH.readFromGitHub !== false && !/^(localhost|127\.0\.0\.1|)$|\.github\.io$/i.test(location.hostname);
   const RAW_BASE = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/`;
   let works = [];
+  let reorder = null; // { ids, original } while an admin is reordering the grid
   let content = {}; // overrides published in data/content.json
   let headSha = null; // latest commit read by an editor; used to show not-yet-deployed photos
-  const allWorks = () => works;
+  const allWorks = () => (reorder ? reorder.ids.map((id) => works.find((w) => w.id === id)).filter(Boolean) : works);
 
   const decodeB64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, "")), (c) => c.charCodeAt(0)));
 
@@ -235,7 +236,7 @@
 
   $("#filter-buttons").addEventListener("click", (e) => {
     const b = e.target.closest(".filter");
-    if (!b) return;
+    if (!b || reorder) return;
     state.filter = b.dataset.filter;
     renderFilters();
     renderGrid();
@@ -256,9 +257,19 @@
     grid.innerHTML = state.list
       .map(
         (w, i) => `
-      <article class="card" tabindex="0" data-index="${i}" aria-label="${esc(w.title)}, ${esc(w.year)}">
+      <article class="card" tabindex="0" data-index="${i}" data-id="${esc(w.id)}" aria-label="${esc(w.title)}, ${esc(w.year)}${reorder ? ". Modo de reordenação: use as setas do teclado para mover." : ""}">
         ${cardMedia(w)}
-        ${isAdmin() ? `<button type="button" class="card-edit" data-edit="${i}" aria-label="Editar ${esc(w.title)}" title="Editar obra">✎</button>` : ""}
+        ${
+          reorder
+            ? `<span class="card-handle" aria-hidden="true" title="Arraste para mover">⠿</span>
+        <span class="card-move-group">
+          <button type="button" class="card-move" data-move="-1" aria-label="Mover ${esc(w.title)} para antes" title="Mover para antes">←</button>
+          <button type="button" class="card-move" data-move="1" aria-label="Mover ${esc(w.title)} para depois" title="Mover para depois">→</button>
+        </span>`
+            : isAdmin()
+              ? `<button type="button" class="card-edit" data-edit="${i}" aria-label="Editar ${esc(w.title)}" title="Editar obra">✎</button>`
+              : ""
+        }
         <div class="card-caption">
           <p class="artist"><strong>${esc(artistOf(w))}</strong> ${esc(datesOf(w))}</p>
           <p><em>${esc(w.title)}</em>, ${esc(w.year)}</p>
@@ -296,6 +307,11 @@
   }
 
   $("#obras").addEventListener("click", (e) => {
+    if (reorder) {
+      const mv = e.target.closest(".card-move");
+      if (mv) moveCard(mv.closest(".card"), +mv.dataset.move);
+      return;
+    }
     const edit = e.target.closest(".card-edit");
     if (edit) {
       openEditor(state.list[+edit.dataset.edit]);
@@ -314,6 +330,7 @@
     }
   });
   $("#obras").addEventListener("keydown", (e) => {
+    if (reorder) return reorderKey(e);
     if (e.target.closest(".carousel-btn, .carousel-dot, .card-edit")) return;
     const card = e.target.closest(".card");
     const carousel = card && $(".carousel", card);
@@ -329,6 +346,10 @@
   });
 
   $("#only-available").addEventListener("change", (e) => {
+    if (reorder) {
+      e.target.checked = state.onlyAvailable;
+      return;
+    }
     state.onlyAvailable = e.target.checked;
     renderGrid();
   });
@@ -336,6 +357,230 @@
     state.currency = e.target.value;
     renderGrid();
     if (!$("#viewer").hidden) renderViewer();
+  });
+
+  /* ---------- Reorder artworks (admin) ---------- */
+  // Order = position in data/artworks.json. Dragging works with pointer events so mouse and touch behave
+  // the same (native HTML5 drag-and-drop does not work on phones). The new order is published only on "Salvar ordem".
+  const reorderDirty = () => !!reorder && reorder.ids.join("|") !== reorder.original.join("|");
+  const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const gridEl = $("#obras");
+  let drag = null;
+  let reorderBusy = false;
+
+  function announce(text) {
+    $("#reorder-live").textContent = text;
+  }
+
+  function updateReorderBar() {
+    $("#reorder-save").disabled = !reorderDirty() || reorderBusy;
+    $("#reorder-cancel").disabled = reorderBusy;
+    $("#reorder-hint").textContent = reorderDirty()
+      ? "Ordem alterada. Salve para publicar."
+      : "Arraste os cards ou use as setas do teclado.";
+  }
+
+  function enterReorder() {
+    if (!isAdmin()) return openLogin();
+    if (reorder) return;
+    if (works.length < 2) return publishStatus("É preciso ter pelo menos 2 obras para reordenar.");
+    if (state.filter !== "all" || state.onlyAvailable) {
+      return publishStatus("Para reordenar, selecione o filtro “Todas” e desmarque “Somente disponíveis”.", "error");
+    }
+    publishStatus("");
+    reorder = { ids: works.map((w) => w.id), original: works.map((w) => w.id) };
+    document.body.classList.add("reordering");
+    $("#reorder-bar").hidden = false;
+    updateReorderBar();
+    renderGrid();
+  }
+
+  function exitReorder() {
+    reorder = null;
+    drag = null;
+    document.body.classList.remove("reordering");
+    $("#reorder-bar").hidden = true;
+    refresh();
+  }
+
+  function cancelReorder() {
+    if (reorderBusy || drag) return;
+    if (reorderDirty() && !confirm("Descartar a nova ordem das obras?")) return;
+    exitReorder();
+  }
+
+  // FLIP: records positions, applies the DOM change, then animates every card from its old spot.
+  function flip(mutate, exclude) {
+    const cards = $$(".card", gridEl).filter((c) => c !== exclude);
+    const first = new Map(cards.map((c) => [c, c.getBoundingClientRect()]));
+    mutate();
+    if (reduceMotion()) return;
+    for (const c of cards) {
+      const a = first.get(c), b = c.getBoundingClientRect();
+      const dx = a.left - b.left, dy = a.top - b.top;
+      if ((dx || dy) && c.animate) c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 220, easing: "ease" });
+    }
+  }
+
+  function syncOrderFromDom() {
+    reorder.ids = $$(".card", gridEl).map((c) => c.dataset.id);
+    updateReorderBar();
+  }
+
+  function moveCard(card, dir) {
+    const sibling = dir < 0 ? card.previousElementSibling : card.nextElementSibling;
+    if (!sibling || !sibling.classList.contains("card")) return;
+    flip(() => (dir < 0 ? sibling.before(card) : sibling.after(card)));
+    syncOrderFromDom();
+    const pos = reorder.ids.indexOf(card.dataset.id) + 1;
+    const title = (state.list.find((w) => w.id === card.dataset.id) || {}).title || "Obra";
+    announce(`${title}: posição ${pos} de ${reorder.ids.length}.`);
+    card.focus({ preventScroll: true });
+    card.scrollIntoView({ block: "nearest", behavior: reduceMotion() ? "auto" : "smooth" });
+  }
+
+  function reorderKey(e) {
+    const card = e.target.closest(".card");
+    if (!card || e.target !== card || reorderBusy) return;
+    const dir = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key];
+    if (!dir) return;
+    e.preventDefault();
+    moveCard(card, dir);
+  }
+
+  function dropTarget() {
+    const els = document.elementsFromPoint(drag.x, drag.y);
+    for (const el of els) {
+      const c = el.closest && el.closest(".card");
+      // Cards still sliding into place are visually where they used to be; ignoring them avoids the placeholder flickering back and forth.
+      if (c && c !== drag.card && c.parentElement === gridEl && !(c.getAnimations && c.getAnimations().length)) return c;
+    }
+    return null;
+  }
+
+  function placeOver(target) {
+    // Passing over a card swaps the placeholder with it: after it when moving forward, before it when moving back.
+    const forward = !!(drag.ph.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING);
+    flip(() => (forward ? target.after(drag.ph) : target.before(drag.ph)), drag.card);
+  }
+
+  function positionDragged() {
+    drag.card.style.left = `${drag.x - drag.offX}px`;
+    drag.card.style.top = `${drag.y - drag.offY}px`;
+  }
+
+  // Runs every frame while dragging: auto-scroll near the viewport edges and swap with the card under the pointer.
+  function dragLoop() {
+    if (!drag || !drag.active) return;
+    const edge = 100;
+    let dy = 0;
+    if (drag.y < edge) dy = -Math.ceil((edge - drag.y) / 5);
+    else if (drag.y > innerHeight - edge) dy = Math.ceil((drag.y - (innerHeight - edge)) / 5);
+    if (dy) window.scrollBy(0, dy);
+    const t = dropTarget();
+    if (t) placeOver(t);
+    drag.raf = requestAnimationFrame(dragLoop);
+  }
+
+  function startDrag() {
+    const { card } = drag;
+    const r = card.getBoundingClientRect();
+    drag.offX = drag.startX - r.left;
+    drag.offY = drag.startY - r.top;
+    const ph = document.createElement("div");
+    ph.className = "card-placeholder";
+    ph.style.height = `${r.height}px`;
+    card.before(ph);
+    drag.ph = ph;
+    Object.assign(card.style, {
+      position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`,
+      margin: "0", zIndex: "60", transition: "none"
+    });
+    card.classList.add("dragging");
+    drag.active = true;
+    drag.raf = requestAnimationFrame(dragLoop);
+  }
+
+  function endDrag() {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    cancelAnimationFrame(d.raf);
+    if (!d.active) return;
+    const { card, ph } = d;
+    const from = card.getBoundingClientRect();
+    ["position", "left", "top", "width", "height", "margin", "zIndex", "transition"].forEach((p) => (card.style[p] = ""));
+    card.classList.remove("dragging");
+    ph.replaceWith(card);
+    const to = card.getBoundingClientRect();
+    if (!reduceMotion() && card.animate) {
+      card.animate([{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(1.03)` }, { transform: "none" }], { duration: 180, easing: "ease-out" });
+    }
+    syncOrderFromDom();
+    const pos = reorder.ids.indexOf(card.dataset.id) + 1;
+    announce(`Obra movida para a posição ${pos} de ${reorder.ids.length}.`);
+  }
+
+  gridEl.addEventListener("pointerdown", (e) => {
+    if (!reorder || reorderBusy || drag || e.button > 0 || e.target.closest(".card-move")) return;
+    const card = e.target.closest(".card");
+    if (!card) return;
+    // On touch screens only the handle starts a drag, so the page can still be scrolled by swiping on the card.
+    if (e.pointerType === "touch" && !e.target.closest(".card-handle")) return;
+    if (e.pointerType !== "touch") e.preventDefault();
+    drag = { card, id: e.pointerId, startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY, active: false };
+  });
+  document.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    if (!drag.active) {
+      if (Math.hypot(drag.x - drag.startX, drag.y - drag.startY) < 5) return;
+      startDrag();
+    }
+    positionDragged();
+  });
+  ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (e) => drag && e.pointerId === drag.id && endDrag()));
+  gridEl.addEventListener("dragstart", (e) => reorder && e.preventDefault());
+
+  async function saveOrder() {
+    if (!reorder || !reorderDirty() || reorderBusy) return;
+    const ids = reorder.ids.slice();
+    reorderBusy = true;
+    updateReorderBar();
+    $("#reorder-hint").textContent = "Publicando a nova ordem…";
+    try {
+      const result = await commitChange({
+        message: "Reordena obras",
+        mutateWorks: (list) => {
+          // Applied on top of the latest published list: works added meanwhile go to the end, removed ones are skipped,
+          // and the content of every work stays exactly as published.
+          const byId = new Map(list.map((w) => [w.id, w]));
+          const ordered = ids.filter((id) => byId.has(id)).map((id) => byId.get(id));
+          const known = new Set(ids);
+          return [...ordered, ...list.filter((w) => !known.has(w.id))];
+        }
+      });
+      works = result.list;
+      headSha = result.sha;
+      reorderBusy = false;
+      exitReorder();
+      publishStatus(`Nova ordem das obras salva. ${PUBLISHED_MSG}`, "ok");
+    } catch (err) {
+      reorderBusy = false;
+      updateReorderBar();
+      $("#reorder-hint").textContent = ghErrorMessage(err);
+    }
+  }
+
+  $("#btn-reorder").addEventListener("click", enterReorder);
+  $("#reorder-cancel").addEventListener("click", cancelReorder);
+  $("#reorder-save").addEventListener("click", saveOrder);
+  window.addEventListener("beforeunload", (e) => {
+    if (reorderDirty()) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
   });
 
   /* ---------- Dialog helpers ---------- */
@@ -1314,7 +1559,10 @@
       else if (e.key === "Tab") trapFocus(e, modal);
       return;
     }
-    if (viewer.hidden) return;
+    if (viewer.hidden) {
+      if (reorder && e.key === "Escape") cancelReorder();
+      return;
+    }
     if (e.key === "Escape") closeDialog(viewer);
     else if (e.key === "ArrowRight") step(1);
     else if (e.key === "ArrowLeft") step(-1);
@@ -1429,6 +1677,13 @@
     if (!admin) {
       headSha = null;
       publishStatus("");
+      if (reorder) {
+        reorder = null;
+        drag = null;
+        reorderBusy = false;
+        document.body.classList.remove("reordering");
+        $("#reorder-bar").hidden = true;
+      }
       if (!modal.hidden) closeAddModal(true);
       if (!cmodal.hidden) closeDialog(cmodal);
     }

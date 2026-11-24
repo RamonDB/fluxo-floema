@@ -195,34 +195,6 @@
     ]
   },
   {
-    "id": "OBR-0012",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1952",
-    "title": "teste",
-    "year": 2026,
-    "type": "Pintura",
-    "medium": "óleo sobre tela",
-    "signed": "",
-    "edition": "20",
-    "height": 180,
-    "width": 90,
-    "depth": 3,
-    "priceBRL": 15000,
-    "status": "available",
-    "description": "descrição",
-    "exhibitions": [
-      "exposição 1"
-    ],
-    "literature": [
-      "literatura 1"
-    ],
-    "createdAt": "2026-11-24T16:31:34.796Z",
-    "images": [
-      "images/obras/OBR-0012-mwuwwih8-1.jpg",
-      "images/obras/OBR-0012-mwuwwih8-2.jpg"
-    ]
-  },
-  {
     "id": "OBR-0013",
     "artist": "Vicente Baltar",
     "artistDates": "n. 1999",

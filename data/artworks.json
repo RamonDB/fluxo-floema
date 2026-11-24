@@ -42,16 +42,18 @@
     "edition": "",
     "height": 59,
     "width": 62,
-    "depth": 28,
     "priceBRL": 7000,
     "status": "available",
     "description": "",
     "exhibitions": [],
     "literature": [],
     "createdAt": "2026-11-24T14:00:58.765Z",
-    "art": {
-      "kind": "rings"
-    }
+    "depth": 28,
+    "updatedAt": "2026-11-24T15:32:47.851Z",
+    "images": [
+      "images/obras/OBR-0002-mwuusu57-1.jpg",
+      "images/obras/OBR-0002-mwuusu57-2.jpg"
+    ]
   },
   {
     "id": "OBR-0003",

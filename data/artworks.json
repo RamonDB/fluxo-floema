@@ -413,5 +413,28 @@
       "images/obras/OBR-0018-mwuz2q8j-4.jpg",
       "images/obras/OBR-0018-mwuz2q8j-5.jpg"
     ]
+  },
+  {
+    "id": "OBR-0019",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "sem título (da série Fascículos)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Cerâmica e vidro [Pottery and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 36,
+    "depth": 18,
+    "priceBRL": 8000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:33:47.034Z",
+    "images": [
+      "images/obras/OBR-0019-mwuz4iai-1.jpg"
+    ]
   }
 ]

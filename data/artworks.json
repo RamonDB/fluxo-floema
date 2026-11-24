@@ -146,5 +146,32 @@
     "art": {
       "kind": "rings"
     }
+  },
+  {
+    "id": "OBR-0007",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "Folha-Seta (da série Filotaxias)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "costura em papel kraft 120g",
+    "signed": "",
+    "edition": "",
+    "height": 110,
+    "width": 45,
+    "depth": 35,
+    "priceBRL": 4000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T15:39:54.415Z",
+    "images": [
+      "images/obras/OBR-0007-mwuv227i-1.jpg",
+      "images/obras/OBR-0007-mwuv227i-2.jpg",
+      "images/obras/OBR-0007-mwuv227i-3.jpg",
+      "images/obras/OBR-0007-mwuv227i-4.jpg",
+      "images/obras/OBR-0007-mwuv227i-5.jpg"
+    ]
   }
 ]

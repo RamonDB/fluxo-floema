@@ -1,29 +1,5 @@
 [
   {
-    "id": "OBR-0002",
-    "artist": "Iahra",
-    "artistDates": "n. 1993",
-    "title": "flor-do-amanhã",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "Vidro e ferro [Glass and iron]",
-    "signed": "",
-    "edition": "",
-    "height": 59,
-    "width": 62,
-    "priceBRL": 7000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T14:00:58.765Z",
-    "updatedAt": "2026-11-24T15:34:43.329Z",
-    "depth": 28,
-    "images": [
-      "images/obras/OBR-0002-mwuuvco9-1.jpg"
-    ]
-  },
-  {
     "id": "OBR-0004",
     "artist": "Iahra",
     "artistDates": "n. 1952",
@@ -45,6 +21,30 @@
     "depth": 43,
     "images": [
       "images/obras/OBR-0004-mwuvhu88-1.jpg"
+    ]
+  },
+  {
+    "id": "OBR-0002",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "flor-do-amanhã",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Vidro e ferro [Glass and iron]",
+    "signed": "",
+    "edition": "",
+    "height": 59,
+    "width": 62,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:00:58.765Z",
+    "updatedAt": "2026-11-24T15:34:43.329Z",
+    "depth": 28,
+    "images": [
+      "images/obras/OBR-0002-mwuuvco9-1.jpg"
     ]
   },
   {

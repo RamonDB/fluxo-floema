@@ -313,5 +313,28 @@
     "images": [
       "images/obras/OBR-0014-mwuyuafh-1.jpg"
     ]
+  },
+  {
+    "id": "OBR-0015",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "Sem título (série Sintomas Alados)",
+    "year": 2025,
+    "type": "Escultura",
+    "medium": "Ceramica e prata [Pottery and silver]",
+    "signed": "",
+    "edition": "",
+    "height": 79,
+    "width": 32,
+    "depth": 8,
+    "priceBRL": 8000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:27:23.920Z",
+    "images": [
+      "images/obras/OBR-0015-mwuywaog-1.jpg"
+    ]
   }
 ]

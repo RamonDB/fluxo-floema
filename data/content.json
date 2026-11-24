@@ -1,1 +1,14 @@
-{}
+{
+  "artists": {
+    "title": "Sobre os artistas",
+    "items": [
+      {
+        "id": "vicente-baltar",
+        "name": "Vicente Baltar",
+        "line": "Rio de Janeiro, 1999",
+        "text": "Pioneiro da arte óptica e cinética no Brasil, Vicente Baltar iniciou sua trajetória no final dos anos 1970, ao lado de grupos experimentais que buscavam romper com a contemplação passiva da obra. Seus trabalhos utilizam gamas cromáticas rigorosas, sistemas modulares e superfícies que se transformam conforme o deslocamento do público.\n\nSua produção integra coleções públicas e privadas no Brasil, na Europa e nos Estados Unidos, e foi apresentada em bienais e mostras individuais em instituições de referência.",
+        "photo": "images/artistas/Vicente-Baltar-mwu3os11-1.jpg"
+      }
+    ]
+  }
+}

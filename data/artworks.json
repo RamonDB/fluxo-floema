@@ -29,5 +29,28 @@
       "images/obras/OBR-0001-mwttoghe-4.jpg",
       "images/obras/OBR-0001-mwttoghe-5.jpg"
     ]
+  },
+  {
+    "id": "OBR-0002",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "flor-do-amanhã",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Vidro e ferro [Glass and iron]",
+    "signed": "",
+    "edition": "",
+    "height": 59,
+    "width": 62,
+    "depth": 28,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:00:58.765Z",
+    "art": {
+      "kind": "rings"
+    }
   }
 ]

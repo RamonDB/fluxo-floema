@@ -290,5 +290,28 @@
     "images": [
       "images/obras/OBR-0013-mwuyrxi4-1.jpg"
     ]
+  },
+  {
+    "id": "OBR-0014",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1999",
+    "title": "Libélula (da série Sintomas Alados)",
+    "year": 2025,
+    "type": "Escultura",
+    "medium": "Ceramica e ferro [Pottery and iron]",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 40,
+    "depth": 10,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:25:50.285Z",
+    "images": [
+      "images/obras/OBR-0014-mwuyuafh-1.jpg"
+    ]
   }
 ]

@@ -52,5 +52,28 @@
     "art": {
       "kind": "rings"
     }
+  },
+  {
+    "id": "OBR-0003",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "Arqueologias do espaço",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "papel kraft",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 41,
+    "depth": 33,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:06:25.573Z",
+    "art": {
+      "kind": "rings"
+    }
   }
 ]

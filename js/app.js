@@ -755,7 +755,7 @@
       artist: f.artist.value.trim(),
       artistDates: f.artistDates.value.trim(),
       title: f.title.value.trim(),
-      year: +f.year.value,
+      year: /^\d{1,4}$/.test(f.year.value.trim()) ? +f.year.value : f.year.value.trim(),
       type: f.type.value.trim(),
       medium: f.medium.value.trim(),
       signed: f.signed.value.trim(),

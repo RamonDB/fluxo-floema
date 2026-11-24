@@ -90,16 +90,17 @@
     "edition": "",
     "height": 58,
     "width": 52,
-    "depth": 43,
     "priceBRL": 7000,
     "status": "available",
     "description": "",
     "exhibitions": [],
     "literature": [],
     "createdAt": "2026-11-24T14:08:07.621Z",
-    "art": {
-      "kind": "squares"
-    }
+    "depth": 43,
+    "updatedAt": "2026-11-24T15:52:12.923Z",
+    "images": [
+      "images/obras/OBR-0004-mwuvhu88-1.jpg"
+    ]
   },
   {
     "id": "OBR-0005",

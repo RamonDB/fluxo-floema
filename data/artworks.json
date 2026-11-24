@@ -48,29 +48,6 @@
     ]
   },
   {
-    "id": "OBR-0005",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1952",
-    "title": "das formas",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "Vidro e ferro [Glass and iron]",
-    "signed": "",
-    "edition": "",
-    "height": 38,
-    "width": 20,
-    "depth": 18,
-    "priceBRL": 70000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T14:09:45.141Z",
-    "art": {
-      "kind": "rings"
-    }
-  },
-  {
     "id": "OBR-0006",
     "artist": "Iahra",
     "artistDates": "n. 1993",

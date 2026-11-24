@@ -1,14 +1,18 @@
 :root {
   --bg: #ffffff;
-  --fg: #111111;
-  --muted: #6b6b6b;
-  --line: #e6e6e6;
-  --accent: #111111;
-  --available: #2e9d5b;
-  --reserved: #e0a100;
-  --sold: #c0392b;
-  --serif: "Cormorant Garamond", Georgia, serif;
-  --sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --fg: #000000;
+  --muted: #5a5a55;
+  --line: #e3e0d4;
+  --accent: #000000;
+  --available: #566043;
+  --reserved: #7a591e;
+  --sold: #6e3b26;
+  --cor-mostarda: #6d5e17;
+  --cor-oliva: #505732;
+  --cor-creme: #f2efe3;
+  --ff-titulo: "Gumos", "Indivisible", "Hanken Grotesk", system-ui, sans-serif;
+  --serif: "Indivisible", "Hanken Grotesk", system-ui, sans-serif;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --max: 1200px;
 }
 
@@ -77,15 +81,17 @@ p { margin: 0; }
 /* ---------- Hero ---------- */
 .hero { position: relative; overflow: hidden; }
 .hero-cover {
-  --cover-bg: #5f644d;
-  background: var(--cover-bg);
-  display: flex; justify-content: center; align-items: center;
-  height: 100vh; min-height: 420px; max-height: 920px;
-  padding: 80px 24px 48px;
+  background: var(--cor-mostarda) url("../images/brand/hero-capa.jpg") center / cover no-repeat;
+  color: #fff;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+  height: 100vh; min-height: 520px;
+  padding: 96px clamp(20px, 5vw, 72px) 48px;
 }
-.hero-poster {
-  display: block; height: 100%; width: auto; max-width: 100%; max-height: 768px;
-  aspect-ratio: 1 / 1; object-fit: contain;
+.hero-title { display: block; width: min(86vw, 760px); height: auto; }
+.hero-info {
+  position: absolute; left: clamp(20px, 5vw, 72px); right: clamp(20px, 5vw, 72px); bottom: clamp(20px, 5vw, 56px);
+  display: flex; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap;
+  font-family: var(--ff-titulo); font-size: clamp(15px, 1.6vw, 18px); line-height: 1.3; max-width: none;
 }
 .hero-cover .scroll-cue {
   position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); color: #fff; opacity: .8;
@@ -354,8 +360,8 @@ h2 { font-family: var(--serif); font-size: 34px; margin-bottom: 18px; }
   .viewer-image, .room { height: 55vh; }
   .nav-btn { top: auto; bottom: 12px; transform: none; font-size: 40px; position: fixed; }
   .nav-toggle { display: block; }
-  .hero-cover { height: auto; min-height: 0; max-height: none; padding: 84px 16px 40px; }
-  .hero-poster { width: 100%; height: auto; }
+  .hero-cover { height: auto; min-height: 100svh; padding: 96px 20px 120px; }
+  .hero-info { flex-direction: column; }
   .main-nav ul {
     position: absolute; top: 72px; left: 0; right: 0; flex-direction: column; align-items: flex-start;
     gap: 18px; padding: 24px 20px; background: #fff; color: var(--fg); box-shadow: 0 8px 16px rgba(0,0,0,.08);
@@ -435,6 +441,43 @@ h2 { font-family: var(--serif); font-size: 34px; margin-bottom: 18px; }
 .artist-edit-photo { display: flex; gap: 16px; align-items: center; margin-top: 16px; }
 .artist-edit-thumb { width: 72px; height: 90px; background: #f4f4f2; display: flex; align-items: center; justify-content: center; font-size: 11px; overflow: hidden; }
 .artist-edit-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ---------- Identidade Fluxo-Floema: sem fios, sombras, cantos arredondados ou degradês ---------- */
+body { font-size: 17px; line-height: 1.55; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.75rem, 4.5vw, 3.25rem); line-height: 1.08; }
+.curatorial-head h2, .exhibition-title { font-style: normal; font-family: var(--serif); }
+.exhibition-title { font-size: clamp(1.75rem, 4.5vw, 3.25rem); line-height: 1.08; }
+.lead, .curatorial-body p, .artist-text h3 { font-family: var(--sans); }
+.artist-text h3 { font-family: var(--serif); }
+.curatorial-body p { color: var(--fg); font-size: 17px; line-height: 1.55; max-width: 60ch; }
+.brand img { display: block; height: 28px; width: auto; transition: filter .35s; }
+.site-header.scrolled .brand img, .site-header.nav-open .brand img { filter: invert(1); }
+.site-header.scrolled, .site-header.nav-open, .main-nav ul { box-shadow: none; }
+.main-nav a, .label, .field label, .meta, .curatorial-artists, .btn, .link-btn, .login-btn { font-family: var(--sans); }
+.card-art, .carousel-slide img, .viewer-photo, .viewer-art, .artist-portrait, .add-preview, .room-art,
+.modal-card, .reorder-bar, .card-edit, .card-handle, .card-move, .carousel-btn, .sofa-seat { box-shadow: none; }
+.card-edit, .card-handle, .card-move, .carousel-btn, .photo-del, .dot, .carousel-dot::before { border-radius: 0; }
+.dot, .carousel-dot::before { border-radius: 50%; }
+.sofa-back, .sofa-seat { border-radius: 0; }
+.room-wall, .room-floor { background: var(--cor-creme); }
+.room-floor { background: #d9d4c0; }
+.artists, .exhibition, .contact, .site-footer, .filters, .modal-card fieldset, .artist-edit { border-top: 0; }
+.card-media, .preview-wrap, .photo-item, .thumb, .artist-portrait.has-photo, .publish-status, .token-saved { background: var(--cor-creme); }
+.publish-status, .token-saved { border-left: 0; }
+.exhibition { background: #566043; color: #fff; max-width: none; padding-left: max(32px, calc((100vw - var(--max)) / 2 + 32px)); padding-right: max(32px, calc((100vw - var(--max)) / 2 + 32px)); }
+.exhibition .label { color: #fff; opacity: .8; }
+.contact { background: var(--cor-creme); max-width: none; padding-left: max(32px, calc((100vw - var(--max)) / 2 + 32px)); padding-right: max(32px, calc((100vw - var(--max)) / 2 + 32px)); }
+.contact > p { color: var(--fg); }
+.site-footer { background: #000; color: #fff; }
+.btn { border-color: var(--accent); }
+.btn:hover, .btn:focus-visible { background: #fff; color: #000; }
+.btn-ghost { background: transparent; }
+.card.dragging { box-shadow: none; }
+.modal { background: rgba(0,0,0,.6); }
+@media (max-width: 900px) {
+  .exhibition, .contact { padding-left: 20px; padding-right: 20px; }
+}
 .artist-edit-photo-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .artist-edit-photo-actions .link-btn { padding: 0; }
 #btn-add-artist { padding: 8px 0; }

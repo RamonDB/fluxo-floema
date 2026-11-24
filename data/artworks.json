@@ -303,15 +303,23 @@
     "edition": "",
     "height": 60,
     "width": 40,
-    "depth": 10,
     "priceBRL": 7000,
     "status": "available",
     "description": "",
     "exhibitions": [],
     "literature": [],
     "createdAt": "2026-11-24T17:25:50.285Z",
+    "depth": 10,
+    "updatedAt": "2026-11-24T17:47:52.957Z",
     "images": [
-      "images/obras/OBR-0014-mwuyuafh-1.jpg"
+      "images/obras/OBR-0014-mwuzmfg9-1.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-2.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-3.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-4.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-5.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-6.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-7.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-8.jpg"
     ]
   },
   {

@@ -19,6 +19,10 @@ window.GALLERY = {
   github: {
     owner: "RamonDB",
     repo: "fluxo-floema",
-    branch: "main"
+    branch: "main",
+    // Em hospedagem fora do GitHub (ex.: GoDaddy), os visitantes leem obras, textos e fotos
+    // direto do repositório, então as publicações feitas pelo site aparecem sem novo upload.
+    // Use false para ler apenas os arquivos hospedados junto com o site.
+    readFromGitHub: true
   }
 };

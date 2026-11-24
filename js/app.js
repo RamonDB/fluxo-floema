@@ -12,6 +12,10 @@
   // GitHub repository. Visitors read the published copy; logged-in editors read and
   // write the repository directly through the GitHub API.
   const GH = G.github;
+  // Fora do GitHub Pages e do teste local (ex.: hospedagem na GoDaddy), os dados publicados e as fotos
+  // são lidos direto do repositório, para os visitantes verem as mudanças sem novo upload de arquivos.
+  const REMOTE_READ = GH.readFromGitHub !== false && !/^(localhost|127\.0\.0\.1|)$|\.github\.io$/i.test(location.hostname);
+  const RAW_BASE = `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/`;
   let works = [];
   let content = {}; // overrides published in data/content.json
   let headSha = null; // latest commit read by an editor; used to show not-yet-deployed photos
@@ -119,13 +123,19 @@
         content = remote.content;
       } else {
         const stamp = Date.now();
-        const [wr, cr] = await Promise.all([
-          fetch(`data/artworks.json?t=${stamp}`, { cache: "no-store" }),
-          fetch(`data/content.json?t=${stamp}`, { cache: "no-store" })
-        ]);
-        const data = wr.ok ? await wr.json() : [];
-        works = Array.isArray(data) ? data.filter(isValidWork) : [];
-        content = cr.ok ? cleanContent(await cr.json().catch(() => ({}))) : {};
+        // Tries the repository first (when hosted elsewhere), then the copy shipped with the site.
+        const getJson = async (path) => {
+          for (const base of REMOTE_READ ? [RAW_BASE, ""] : [""]) {
+            try {
+              const res = await fetch(`${base}${path}?t=${stamp}`, { cache: "no-store" });
+              if (res.ok) return await res.json();
+            } catch {}
+          }
+          return null;
+        };
+        const [data, rawContent] = await Promise.all([getJson("data/artworks.json"), getJson("data/content.json")]);
+        if (Array.isArray(data)) works = data.filter(isValidWork);
+        content = cleanContent(rawContent);
       }
     } catch (e) {
       console.warn("Não foi possível carregar o conteúdo publicado.", e);
@@ -142,11 +152,13 @@
   // Supports both the legacy single `image` field and the `images` list.
   const photosOf = (w) => (Array.isArray(w.images) ? w.images.filter(Boolean) : w.image ? [w.image] : []);
   const isSafeSrc = (s) => typeof s === "string" && /^(data:image\/|https:\/\/|images\/)/i.test(s) && !s.includes("..");
-  // Photos just published are not on GitHub Pages yet; editors load them from the commit instead.
-  const srcOf = (p) =>
-    session && headSha && p.startsWith("images/")
-      ? `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${headSha}/${p}`
-      : p;
+  // Editors load just-published photos from their commit (the site copy may not be updated yet);
+  // visitors on external hosting load photos from the repository; otherwise the local path is used.
+  const srcOf = (p) => {
+    if (!p.startsWith("images/")) return p;
+    if (session && headSha) return `https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${headSha}/${p}`;
+    return REMOTE_READ ? RAW_BASE + p : p;
+  };
   const withSrc = (w) => ({ ...w, image: undefined, images: photosOf(w).map(srcOf) });
 
   function isValidWork(w) {

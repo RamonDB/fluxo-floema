@@ -248,5 +248,27 @@
       "images/obras/OBR-0010-mwuvpac3-5.jpg",
       "images/obras/OBR-0010-mwuvpac3-6.jpg"
     ]
+  },
+  {
+    "id": "OBR-0011",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "instalação entre linhas e dobras,  3 folhas (da série outras frequências",
+    "year": 2024,
+    "type": "Escultura",
+    "medium": "Papel kraft e metal",
+    "signed": "",
+    "edition": "",
+    "height": 150,
+    "width": 150,
+    "priceBRL": 15000,
+    "status": "available",
+    "description": "A série Outras Frequências integra o acervo da Pinacoteca do Estado de São Paulo.",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T16:12:11.176Z",
+    "images": [
+      "images/obras/OBR-0011-mwuw7kmg-1.jpg"
+    ]
   }
 ]

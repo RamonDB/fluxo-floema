@@ -198,5 +198,27 @@
     "images": [
       "images/obras/OBR-0008-mwuvg2vo-1.jpg"
     ]
+  },
+  {
+    "id": "OBR-0009",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "amuletos",
+    "year": 2026,
+    "type": "Desenho",
+    "medium": "Pastel seco e grafite sobre papel e costura",
+    "signed": "",
+    "edition": "",
+    "height": 63,
+    "width": 29,
+    "priceBRL": 5000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T15:55:34.367Z",
+    "images": [
+      "images/obras/OBR-0009-mwuvm7hb-1.jpg"
+    ]
   }
 ]

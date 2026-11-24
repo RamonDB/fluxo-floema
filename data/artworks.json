@@ -174,5 +174,28 @@
       "images/obras/OBR-0007-mwuv227i-4.jpg",
       "images/obras/OBR-0007-mwuv227i-5.jpg"
     ]
+  },
+  {
+    "id": "OBR-0008",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "Ovo de grilo (da série Arqueologias do Espaço)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Ferro, concreto e vidro [Iron, cement and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 41,
+    "depth": 33,
+    "priceBRL": 12000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T15:50:48.468Z",
+    "images": [
+      "images/obras/OBR-0008-mwuvg2vo-1.jpg"
+    ]
   }
 ]

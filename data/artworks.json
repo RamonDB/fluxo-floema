@@ -267,5 +267,28 @@
       "images/obras/OBR-0012-mwuwwih8-1.jpg",
       "images/obras/OBR-0012-mwuwwih8-2.jpg"
     ]
+  },
+  {
+    "id": "OBR-0013",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1999",
+    "title": "Voo 4 (da série Sintomas Alados)",
+    "year": 2023,
+    "type": "Escultura",
+    "medium": "Ceramica e ferro [Pottery and iron]",
+    "signed": "",
+    "edition": "",
+    "height": 59,
+    "width": 23,
+    "depth": 15,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:24:00.221Z",
+    "images": [
+      "images/obras/OBR-0013-mwuyrxi4-1.jpg"
+    ]
   }
 ]

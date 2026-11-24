@@ -258,6 +258,7 @@
         (w, i) => `
       <article class="card" tabindex="0" data-index="${i}" aria-label="${esc(w.title)}, ${esc(w.year)}">
         ${cardMedia(w)}
+        ${isAdmin() ? `<button type="button" class="card-edit" data-edit="${i}" aria-label="Editar ${esc(w.title)}" title="Editar obra">✎</button>` : ""}
         <div class="card-caption">
           <p class="artist"><strong>${esc(artistOf(w))}</strong> ${esc(datesOf(w))}</p>
           <p><em>${esc(w.title)}</em>, ${esc(w.year)}</p>
@@ -295,6 +296,11 @@
   }
 
   $("#obras").addEventListener("click", (e) => {
+    const edit = e.target.closest(".card-edit");
+    if (edit) {
+      openEditor(state.list[+edit.dataset.edit]);
+      return;
+    }
     const nav = e.target.closest(".carousel-btn, .carousel-dot");
     if (nav) {
       const carousel = nav.closest(".carousel");
@@ -308,7 +314,7 @@
     }
   });
   $("#obras").addEventListener("keydown", (e) => {
-    if (e.target.closest(".carousel-btn, .carousel-dot")) return;
+    if (e.target.closest(".carousel-btn, .carousel-dot, .card-edit")) return;
     const card = e.target.closest(".card");
     const carousel = card && $(".carousel", card);
     if (carousel && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
@@ -411,6 +417,7 @@
     $("#viewer-price").className = `price ${esc(w.status)}`;
     $("#viewer-price").innerHTML = `<span class="dot"></span>${esc(price(w))}`;
     $("#btn-enquire").hidden = w.status === "sold";
+    $("#btn-edit").hidden = !isAdmin();
     $("#btn-remove").hidden = !isAdmin();
 
     const section = (title, items) =>
@@ -466,6 +473,7 @@
     return e.message && !e.status ? e.message : "Não foi possível publicar no GitHub. Verifique a conexão e tente novamente.";
   }
 
+  $("#btn-edit").addEventListener("click", () => openEditor(state.list[state.index]));
   $("#btn-remove").addEventListener("click", async () => {
     const w = state.list[state.index];
     if (!isAdmin() || !confirm(`Remover a obra "${w.title}" do site para todos os visitantes?`)) return;
@@ -506,7 +514,9 @@
   const modal = $("#add-modal");
   const form = $("#add-form");
   const addStatus = $("#add-status");
-  let pendingPhotos = []; // [{ src: dataURL, width, height }]
+  let pendingPhotos = []; // [{ src, width, height }] new photos; [{ path, src }] photos already published
+  // Edit mode: { id, original (JSON of the work when opened), snapshot (form state), addPhotos (stashed add-mode photos) }
+  let editing = null;
 
   function resizeImage(file, max = 1600) {
     return new Promise((resolve, reject) => {
@@ -595,6 +605,7 @@
   }
   function saveDraft() {
     clearTimeout(draftTimer);
+    if (editing) return; // edits are not drafts of a new artwork
     const values = Object.fromEntries(DRAFT_FIELDS.map((n) => [n, form.elements[n].value]));
     const photos = pendingPhotos.filter((p) => /^data:image\//.test(p.src));
     try {
@@ -620,8 +631,65 @@
     form.elements.year.value = new Date().getFullYear();
   }
 
+  function setFormMode(work) {
+    const f = form.elements;
+    $("#add-title").textContent = work ? `Editar obra — ${work.id}` : "Adicionar obra";
+    $("#add-submit").textContent = work ? "Salvar alterações" : "Salvar obra";
+    $("#btn-clear-draft").hidden = !!work;
+    f.id.readOnly = !!work;
+    f.id.title = work ? "O código da obra não pode ser alterado." : "";
+  }
+
+  const formSnapshot = () =>
+    JSON.stringify({
+      values: DRAFT_FIELDS.map((n) => form.elements[n].value),
+      photos: pendingPhotos.map((p) => p.path || p.src)
+    });
+  const isEditDirty = () => !!editing && formSnapshot() !== editing.snapshot;
+
+  function leaveEditMode() {
+    if (!editing) return;
+    pendingPhotos = editing.addPhotos;
+    editing = null;
+    setFormMode(null);
+  }
+
+  function closeAddModal(force = false) {
+    if (form.classList.contains("busy")) return;
+    if (!force && isEditDirty() && !confirm("Descartar as alterações feitas nesta obra?")) return;
+    closeDialog(modal);
+    leaveEditMode();
+  }
+
+  function openEditor(work) {
+    if (!work) return;
+    if (!isAdmin()) return openLogin();
+    if (form.classList.contains("busy")) return;
+    const addPhotos = editing ? editing.addPhotos : pendingPhotos;
+    form.reset();
+    const f = form.elements;
+    const text = { artist: work.artist || G.artist, artistDates: work.artist ? work.artistDates || "" : G.artistDates,
+      title: work.title, year: work.year, type: work.type, id: work.id, medium: work.medium, signed: work.signed,
+      height: work.height, width: work.width, depth: work.depth, edition: work.edition, priceBRL: work.priceBRL,
+      status: work.status, description: work.description,
+      exhibitions: (work.exhibitions || []).join("\n"), literature: (work.literature || []).join("\n"),
+      kind: (work.art && work.art.kind) || "rings" };
+    Object.entries(text).forEach(([n, v]) => (f[n].value = v ?? ""));
+    pendingPhotos = photosOf(work).map((p) => ({ path: p, src: srcOf(p) }));
+    editing = { id: work.id, original: JSON.stringify(work), addPhotos };
+    setFormMode(work);
+    setAddStatus("");
+    $$(".invalid", form).forEach((el) => el.classList.remove("invalid"));
+    updatePreview();
+    editing.snapshot = formSnapshot();
+    if (modal.hidden) openDialog(modal);
+    f.title.focus();
+  }
+
   $("#btn-add").addEventListener("click", () => {
     if (!isAdmin()) return openLogin();
+    if (form.classList.contains("busy")) return;
+    leaveEditMode();
     const draft = readDraft();
     fillDefaults();
     setAddStatus("");
@@ -650,8 +718,8 @@
   form.addEventListener("input", (e) => e.target.name !== "image" && saveDraftSoon());
   form.addEventListener("change", (e) => e.target.name !== "image" && saveDraftSoon());
 
-  $$("[data-close]", modal).forEach((b) => b.addEventListener("click", () => !form.classList.contains("busy") && closeDialog(modal)));
-  modal.addEventListener("click", (e) => e.target === modal && !form.classList.contains("busy") && closeDialog(modal));
+  $$("[data-close]", modal).forEach((b) => b.addEventListener("click", () => closeAddModal()));
+  modal.addEventListener("click", (e) => e.target === modal && closeAddModal());
   ["width", "height", "kind"].forEach((n) => form.elements[n].addEventListener("input", updatePreview));
 
   form.elements.image.addEventListener("change", async (e) => {
@@ -669,7 +737,7 @@
     }
     // Suggest proportional dimensions from the cover photo when only one side was filled in.
     const f = form.elements, cover = pendingPhotos[0];
-    if (cover) {
+    if (cover && cover.width) {
       const ratio = cover.height / cover.width;
       if (f.width.value && !f.height.value) f.height.value = Math.round(f.width.value * ratio);
       else if (f.height.value && !f.width.value) f.width.value = Math.round(f.height.value / ratio);
@@ -681,33 +749,9 @@
   const lines = (s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "obra";
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!isAdmin() || form.classList.contains("busy")) return;
+  function readFields() {
     const f = form.elements;
-    $$(".invalid", form).forEach((el) => el.classList.remove("invalid"));
-    if (!form.checkValidity()) {
-      const bad = $$(":invalid", form).filter((el) => el.name);
-      bad.forEach((el) => el.classList.add("invalid"));
-      setAddStatus("Preencha os campos obrigatórios (*) corretamente.", "error");
-      bad[0] && bad[0].focus();
-      return;
-    }
-    const typedId = f.id.value.trim();
-    if (typedId && works.some((w) => String(w.id).toLowerCase() === typedId.toLowerCase())) {
-      f.id.classList.add("invalid");
-      setAddStatus(`Já existe uma obra com o código "${typedId}".`, "error");
-      f.id.focus();
-      return;
-    }
-
-    const id = typedId || nextId(works);
-    const stamp = Date.now().toString(36);
-    const files = pendingPhotos.map((p, i) => ({
-      path: `images/obras/${slug(id)}-${stamp}-${i + 1}.jpg`,
-      base64: p.src.split(",")[1]
-    }));
-    const base = {
+    return {
       artist: f.artist.value.trim(),
       artistDates: f.artistDates.value.trim(),
       title: f.title.value.trim(),
@@ -723,9 +767,120 @@
       status: f.status.value,
       description: f.description.value.trim(),
       exhibitions: lines(f.exhibitions.value),
-      literature: lines(f.literature.value),
+      literature: lines(f.literature.value)
+    };
+  }
+
+  function setFormBusy(busy) {
+    form.classList.toggle("busy", busy);
+    if (busy) $$("button, input, select, textarea", form).forEach((el) => ((el.dataset.wasDisabled = el.disabled), (el.disabled = true)));
+    else {
+      $$("button, input, select, textarea", form).forEach((el) => (el.disabled = el.dataset.wasDisabled === "true"));
+      form.elements.kind.disabled = pendingPhotos.length > 0;
+    }
+  }
+
+  async function saveEdit() {
+    const { id, original } = editing;
+    if (!isEditDirty()) {
+      setAddStatus("Nenhuma alteração para salvar.");
+      return;
+    }
+    const stamp = Date.now().toString(36);
+    let n = 0;
+    // Keeps the chosen order: published photos keep their path, new ones get a new file.
+    const files = [];
+    const images = pendingPhotos.map((p) => {
+      if (p.path) return p.path;
+      const path = `images/obras/${slug(id)}-${stamp}-${++n}.jpg`;
+      files.push({ path, base64: p.src.split(",")[1] });
+      return path;
+    });
+    const removed = photosOf(JSON.parse(original)).filter((p) => !images.includes(p) && p.startsWith("images/obras/"));
+    const fields = readFields();
+    const title = fields.title;
+
+    setFormBusy(true);
+    setAddStatus(files.length ? `Publicando alterações e ${files.length} foto(s) nova(s)… não feche esta janela.` : "Publicando alterações…");
+    try {
+      const result = await commitChange({
+        addFiles: files,
+        deletePaths: removed,
+        message: `Edita obra ${id} — ${title}`,
+        mutateWorks: (list) => {
+          const idx = list.findIndex((w) => w.id === id);
+          const conflict = (msg) => Object.assign(new Error(msg), { status: 0 });
+          if (idx < 0) throw conflict("Esta obra foi removida por outro editor. Feche o formulário para ver a versão atual.");
+          // Refuses to overwrite changes another editor published after this form was opened.
+          if (JSON.stringify(list[idx]) !== original) {
+            throw conflict("Esta obra foi alterada por outro editor enquanto você editava. Feche e abra a edição novamente para ver a versão atual (suas alterações não foram salvas).");
+          }
+          const { image, images: _old, art, depth, ...current } = list[idx];
+          const next = {
+            ...current,
+            ...fields,
+            id,
+            ...(current.createdAt ? { createdAt: current.createdAt } : {}),
+            updatedAt: new Date().toISOString(),
+            ...(images.length ? { images } : { art: { kind: form.elements.kind.value } })
+          };
+          return list.map((w, i) => (i === idx ? next : w));
+        }
+      });
+      works = result.list;
+      headSha = result.sha;
+      setFormBusy(false);
+      closeDialog(modal);
+      leaveEditMode();
+      refresh();
+      if (!viewer.hidden) {
+        const i = state.list.findIndex((w) => w.id === id);
+        if (i < 0) closeDialog(viewer);
+        else {
+          state.index = i;
+          state.imgIndex = 0;
+          renderViewer();
+        }
+      }
+      publishStatus(`"${title}" atualizada. ${PUBLISHED_MSG}`, "ok");
+    } catch (err) {
+      setAddStatus(err.status === 0 ? err.message : ghErrorMessage(err), "error");
+    } finally {
+      if (form.classList.contains("busy")) setFormBusy(false);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isAdmin() || form.classList.contains("busy")) return;
+    const f = form.elements;
+    $$(".invalid", form).forEach((el) => el.classList.remove("invalid"));
+    if (!form.checkValidity()) {
+      const bad = $$(":invalid", form).filter((el) => el.name);
+      bad.forEach((el) => el.classList.add("invalid"));
+      setAddStatus("Preencha os campos obrigatórios (*) corretamente.", "error");
+      bad[0] && bad[0].focus();
+      return;
+    }
+    if (editing) return saveEdit();
+    const typedId = f.id.value.trim();
+    if (typedId && works.some((w) => String(w.id).toLowerCase() === typedId.toLowerCase())) {
+      f.id.classList.add("invalid");
+      setAddStatus(`Já existe uma obra com o código "${typedId}".`, "error");
+      f.id.focus();
+      return;
+    }
+
+    const id = typedId || nextId(works);
+    const stamp = Date.now().toString(36);
+    const files = pendingPhotos.map((p, i) => ({
+      path: `images/obras/${slug(id)}-${stamp}-${i + 1}.jpg`,
+      base64: p.src.split(",")[1]
+    }));
+    const base = {
+      ...readFields(),
       createdAt: new Date().toISOString(),
-      ...(files.length ? { images: files.map((x) => x.path) } : { art: { kind: f.kind.value } })
+      ...(files.length ? { images: files.map((x) => x.path) } : { art: { kind: form.elements.kind.value } })
     };
 
     form.classList.add("busy");
@@ -1155,7 +1310,7 @@
       return;
     }
     if (!modal.hidden) {
-      if (e.key === "Escape") closeDialog(modal);
+      if (e.key === "Escape") closeAddModal();
       else if (e.key === "Tab") trapFocus(e, modal);
       return;
     }
@@ -1274,9 +1429,10 @@
     if (!admin) {
       headSha = null;
       publishStatus("");
-      if (!modal.hidden) closeDialog(modal);
+      if (!modal.hidden) closeAddModal(true);
       if (!cmodal.hidden) closeDialog(cmodal);
     }
+    refresh();
     if (!viewer.hidden) renderViewer();
   }
 

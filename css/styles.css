@@ -127,6 +127,15 @@ p { margin: 0; }
 .art-img.detail { transform: scale(2.4); }
 .card-art, .viewer-art, .thumb, .room-art, .add-preview { overflow: hidden; }
 .link-btn.danger { color: var(--sold); display: block; margin-top: 16px; padding: 0; }
+#btn-edit { display: block; margin-top: 22px; padding: 0; }
+#btn-edit + .link-btn.danger { margin-top: 12px; }
+.card-edit {
+  position: absolute; top: 10px; right: 10px; z-index: 3; width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(255,255,255,.95); color: var(--fg); font-size: 16px; line-height: 1;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); transition: background .2s, color .2s;
+}
+.card-edit:hover, .card-edit:focus-visible { background: var(--fg); color: #fff; outline: none; }
+.field input[readonly] { color: var(--muted); border-bottom-style: dashed; cursor: not-allowed; }
 .filter {
   background: none; border: 0; padding: 4px 0; cursor: pointer; font: inherit; font-size: 13px;
   color: var(--muted); letter-spacing: .04em; border-bottom: 1px solid transparent;
@@ -137,7 +146,7 @@ p { margin: 0; }
 
 /* ---------- Grid ---------- */
 .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 72px 64px; padding-bottom: 96px; }
-.card { cursor: pointer; outline: none; opacity: 0; transform: translateY(24px); transition: opacity .7s, transform .7s; }
+.card { position: relative; cursor: pointer; outline: none; opacity: 0; transform: translateY(24px); transition: opacity .7s, transform .7s; }
 .card.in { opacity: 1; transform: none; }
 .card-media {
   background: #f4f4f2; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;

@@ -75,5 +75,28 @@
     "art": {
       "kind": "rings"
     }
+  },
+  {
+    "id": "OBR-0004",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "estrela de 3 pontas [ou Ether]",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "papel kraft",
+    "signed": "",
+    "edition": "",
+    "height": 58,
+    "width": 52,
+    "depth": 43,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:08:07.621Z",
+    "art": {
+      "kind": "squares"
+    }
   }
 ]

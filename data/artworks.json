@@ -121,5 +121,28 @@
     "art": {
       "kind": "rings"
     }
+  },
+  {
+    "id": "OBR-0006",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "cmtefnut(hiografias)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "papel",
+    "signed": "",
+    "edition": "",
+    "height": 92,
+    "width": 65,
+    "depth": 24,
+    "priceBRL": 70000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:19:21.339Z",
+    "art": {
+      "kind": "rings"
+    }
   }
 ]

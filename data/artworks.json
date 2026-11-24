@@ -220,5 +220,33 @@
     "images": [
       "images/obras/OBR-0009-mwuvm7hb-1.jpg"
     ]
+  },
+  {
+    "id": "OBR-0010",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "Metamórfica (da série Arqueologias do Espaço)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Ferro, concreto e vidro [Iron, concrete and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 23,
+    "width": 27,
+    "depth": 34,
+    "priceBRL": 8000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T15:57:58.035Z",
+    "images": [
+      "images/obras/OBR-0010-mwuvpac3-1.jpg",
+      "images/obras/OBR-0010-mwuvpac3-2.jpg",
+      "images/obras/OBR-0010-mwuvpac3-3.jpg",
+      "images/obras/OBR-0010-mwuvpac3-4.jpg",
+      "images/obras/OBR-0010-mwuvpac3-5.jpg",
+      "images/obras/OBR-0010-mwuvpac3-6.jpg"
+    ]
   }
 ]

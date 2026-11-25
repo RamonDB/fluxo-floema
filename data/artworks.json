@@ -1,5 +1,29 @@
 [
   {
+    "id": "OBR-0019",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "sem título (da série Fascículos)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Cerâmica e vidro [Pottery and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 36,
+    "priceBRL": 8000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:33:47.034Z",
+    "depth": 18,
+    "updatedAt": "2026-11-25T15:24:23.818Z",
+    "images": [
+      "images/obras/OBR-0019-mww9xwrp-1.jpg"
+    ]
+  },
+  {
     "id": "OBR-0007",
     "artist": "Iahra",
     "artistDates": "n. 1993",
@@ -78,6 +102,30 @@
       "images/obras/OBR-0014-mwuzmfg9-6.jpg",
       "images/obras/OBR-0014-mwuzmfg9-7.jpg",
       "images/obras/OBR-0014-mwuzmfg9-8.jpg"
+    ]
+  },
+  {
+    "id": "OBR-0006",
+    "artist": "Iahra",
+    "artistDates": "n. 1993",
+    "title": "Efnut (da série Hieroglífias)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "papel",
+    "signed": "",
+    "edition": "",
+    "height": 92,
+    "width": 65,
+    "priceBRL": 8000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T14:19:21.339Z",
+    "updatedAt": "2026-11-25T15:23:34.591Z",
+    "depth": 24,
+    "images": [
+      "images/obras/OBR-0006-mww9wup7-1.jpg"
     ]
   },
   {
@@ -212,30 +260,6 @@
     ]
   },
   {
-    "id": "OBR-0006",
-    "artist": "Iahra",
-    "artistDates": "n. 1993",
-    "title": "Efnut (da série Hieroglífias)",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "papel",
-    "signed": "",
-    "edition": "",
-    "height": 92,
-    "width": 65,
-    "priceBRL": 8000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T14:19:21.339Z",
-    "updatedAt": "2026-11-25T15:23:34.591Z",
-    "depth": 24,
-    "images": [
-      "images/obras/OBR-0006-mww9wup7-1.jpg"
-    ]
-  },
-  {
     "id": "OBR-0008",
     "artist": "Iahra",
     "artistDates": "n. 1993",
@@ -347,30 +371,6 @@
     "createdAt": "2026-11-24T17:29:19.852Z",
     "images": [
       "images/obras/OBR-0016-mwuyys4s-1.jpg"
-    ]
-  },
-  {
-    "id": "OBR-0019",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1952",
-    "title": "sem título (da série Fascículos)",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "Cerâmica e vidro [Pottery and glass]",
-    "signed": "",
-    "edition": "",
-    "height": 60,
-    "width": 36,
-    "priceBRL": 8000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T17:33:47.034Z",
-    "depth": 18,
-    "updatedAt": "2026-11-25T15:24:23.818Z",
-    "images": [
-      "images/obras/OBR-0019-mww9xwrp-1.jpg"
     ]
   }
 ]

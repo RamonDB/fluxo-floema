@@ -1228,10 +1228,23 @@
         ${c.artists ? `<p class="curatorial-artists">${inline(c.artists)}</p>` : ""}
       </header>
       <div class="curatorial-body">
-        ${paras.map((p, i) => `<p${i === 0 ? ' class="lead"' : ""}>${p}</p>`).join("")}
-        ${c.author ? `<p class="curatorial-author">${inline(c.author)}</p>` : ""}
+        ${paras.slice(0, 1).map((p) => `<p class="lead">${p}</p>`).join("")}
+        ${paras.length > 1 ? `<button type="button" class="link-btn curatorial-toggle" aria-expanded="false" aria-controls="curatorial-more">Ler mais</button>` : ""}
+        <div id="curatorial-more"${paras.length > 1 ? " hidden" : ""}>
+          ${paras.slice(1).map((p) => `<p>${p}</p>`).join("")}
+          ${c.author ? `<p class="curatorial-author">${inline(c.author)}</p>` : ""}
+        </div>
       </div>`;
     cur.classList.remove("content-pending");
+    const toggle = cur.querySelector(".curatorial-toggle");
+    if (toggle) {
+      toggle.addEventListener("click", () => {
+        const open = toggle.getAttribute("aria-expanded") !== "true";
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.textContent = open ? "Ler menos" : "Ler mais";
+        $("#curatorial-more").hidden = !open;
+      });
+    }
 
     const a = artistsNow();
     $("#artists-title").textContent = a.title;

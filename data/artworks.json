@@ -361,15 +361,16 @@
     "edition": "",
     "height": 60,
     "width": 36,
-    "depth": 18,
     "priceBRL": 8000,
     "status": "available",
     "description": "",
     "exhibitions": [],
     "literature": [],
     "createdAt": "2026-11-24T17:33:47.034Z",
+    "depth": 18,
+    "updatedAt": "2026-11-25T15:24:23.818Z",
     "images": [
-      "images/obras/OBR-0019-mwuz4iai-1.jpg"
+      "images/obras/OBR-0019-mww9xwrp-1.jpg"
     ]
   }
 ]

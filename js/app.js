@@ -173,6 +173,9 @@
   function cardMedia(work) {
     const w = withSrc(work);
     const photos = w.images;
+    if (photos.length === 1) {
+      return `<div class="card-media"><div class="card-art card-photo">${renderArtwork(w)}</div></div>`;
+    }
     if (photos.length < 2) {
       return `<div class="card-media"><div class="card-art" style="aspect-ratio:${+w.width}/${+w.height}">${renderArtwork(w)}</div></div>`;
     }

@@ -50,6 +50,64 @@
     ]
   },
   {
+    "id": "OBR-0014",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1999",
+    "title": "Libélula (da série Sintomas Alados)",
+    "year": 2025,
+    "type": "Escultura",
+    "medium": "Ceramica e ferro [Pottery and iron]",
+    "signed": "",
+    "edition": "",
+    "height": 60,
+    "width": 40,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:25:50.285Z",
+    "depth": 10,
+    "updatedAt": "2026-11-24T17:47:52.957Z",
+    "images": [
+      "images/obras/OBR-0014-mwuzmfg9-1.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-2.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-3.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-4.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-5.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-6.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-7.jpg",
+      "images/obras/OBR-0014-mwuzmfg9-8.jpg"
+    ]
+  },
+  {
+    "id": "OBR-0017",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1999",
+    "title": "Solvejo (da série Fascículos)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Ceramica e vidro [Pottery and glass]",
+    "signed": "",
+    "edition": "",
+    "height": 52,
+    "width": 8,
+    "depth": 9,
+    "priceBRL": 7500,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:30:52.853Z",
+    "images": [
+      "images/obras/OBR-0017-mwuz0rw4-1.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-2.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-3.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-4.jpg",
+      "images/obras/OBR-0017-mwuz0rw4-5.jpg"
+    ]
+  },
+  {
     "id": "OBR-0010",
     "artist": "Iahra",
     "artistDates": "n. 1993",
@@ -75,6 +133,33 @@
       "images/obras/OBR-0010-mwuvpac3-4.jpg",
       "images/obras/OBR-0010-mwuvpac3-5.jpg",
       "images/obras/OBR-0010-mwuvpac3-6.jpg"
+    ]
+  },
+  {
+    "id": "OBR-0018",
+    "artist": "Vicente Baltar",
+    "artistDates": "n. 1952",
+    "title": "Tempo 8 (da série Notívagas)",
+    "year": 2026,
+    "type": "Escultura",
+    "medium": "Cerâmica e prata [Pottery and silver]",
+    "signed": "",
+    "edition": "",
+    "height": 55,
+    "width": 36,
+    "depth": 10,
+    "priceBRL": 7000,
+    "status": "available",
+    "description": "",
+    "exhibitions": [],
+    "literature": [],
+    "createdAt": "2026-11-24T17:32:24.020Z",
+    "images": [
+      "images/obras/OBR-0018-mwuz2q8j-1.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-2.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-3.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-4.jpg",
+      "images/obras/OBR-0018-mwuz2q8j-5.jpg"
     ]
   },
   {
@@ -218,37 +303,6 @@
     ]
   },
   {
-    "id": "OBR-0014",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1999",
-    "title": "Libélula (da série Sintomas Alados)",
-    "year": 2025,
-    "type": "Escultura",
-    "medium": "Ceramica e ferro [Pottery and iron]",
-    "signed": "",
-    "edition": "",
-    "height": 60,
-    "width": 40,
-    "priceBRL": 7000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T17:25:50.285Z",
-    "depth": 10,
-    "updatedAt": "2026-11-24T17:47:52.957Z",
-    "images": [
-      "images/obras/OBR-0014-mwuzmfg9-1.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-2.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-3.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-4.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-5.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-6.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-7.jpg",
-      "images/obras/OBR-0014-mwuzmfg9-8.jpg"
-    ]
-  },
-  {
     "id": "OBR-0015",
     "artist": "Vicente Baltar",
     "artistDates": "n. 1952",
@@ -292,60 +346,6 @@
     "createdAt": "2026-11-24T17:29:19.852Z",
     "images": [
       "images/obras/OBR-0016-mwuyys4s-1.jpg"
-    ]
-  },
-  {
-    "id": "OBR-0017",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1999",
-    "title": "Solvejo (da série Fascículos)",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "Ceramica e vidro [Pottery and glass]",
-    "signed": "",
-    "edition": "",
-    "height": 52,
-    "width": 8,
-    "depth": 9,
-    "priceBRL": 7500,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T17:30:52.853Z",
-    "images": [
-      "images/obras/OBR-0017-mwuz0rw4-1.jpg",
-      "images/obras/OBR-0017-mwuz0rw4-2.jpg",
-      "images/obras/OBR-0017-mwuz0rw4-3.jpg",
-      "images/obras/OBR-0017-mwuz0rw4-4.jpg",
-      "images/obras/OBR-0017-mwuz0rw4-5.jpg"
-    ]
-  },
-  {
-    "id": "OBR-0018",
-    "artist": "Vicente Baltar",
-    "artistDates": "n. 1952",
-    "title": "Tempo 8 (da série Notívagas)",
-    "year": 2026,
-    "type": "Escultura",
-    "medium": "Cerâmica e prata [Pottery and silver]",
-    "signed": "",
-    "edition": "",
-    "height": 55,
-    "width": 36,
-    "depth": 10,
-    "priceBRL": 7000,
-    "status": "available",
-    "description": "",
-    "exhibitions": [],
-    "literature": [],
-    "createdAt": "2026-11-24T17:32:24.020Z",
-    "images": [
-      "images/obras/OBR-0018-mwuz2q8j-1.jpg",
-      "images/obras/OBR-0018-mwuz2q8j-2.jpg",
-      "images/obras/OBR-0018-mwuz2q8j-3.jpg",
-      "images/obras/OBR-0018-mwuz2q8j-4.jpg",
-      "images/obras/OBR-0018-mwuz2q8j-5.jpg"
     ]
   },
   {

@@ -1602,19 +1602,78 @@
 
 
   /* ---------- Contact ---------- */
-  $("#contact-form").addEventListener("submit", (e) => {
+  // Sent through Web3Forms (config in data.js). The success message only appears when the service confirms delivery.
+  let contactSending = false;
+  $("#contact-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (contactSending) return;
     const cf = e.target;
     const status = $(".form-status", cf);
+    const submit = $("button[type=submit]", cf);
+    const setStatus = (text, kind = "") => {
+      status.textContent = "";
+      status.className = `form-status ${kind}`;
+      status.append(text);
+    };
+    const fallback = () => {
+      const a = document.createElement("a");
+      a.href = `mailto:${G.email}`;
+      a.textContent = G.email;
+      return a;
+    };
+    const fail = (text) => {
+      setStatus(`${text} Se preferir, escreva para `, "error");
+      status.append(fallback(), ".");
+    };
     if (!cf.checkValidity()) {
-      status.textContent = "Por favor, preencha todos os campos corretamente.";
-      status.className = "form-status error";
+      setStatus("Por favor, preencha todos os campos corretamente.", "error");
       $(":invalid", cf).focus();
       return;
     }
-    status.textContent = "Obrigado! Sua mensagem foi enviada. Entraremos em contato em breve.";
-    status.className = "form-status ok";
-    cf.reset();
+    const f = cf.elements;
+    // Filled only by bots: pretend it worked without sending anything.
+    if (f.botcheck.value) {
+      setStatus("Obrigado! Sua mensagem foi enviada. Entraremos em contato em breve.", "ok");
+      cf.reset();
+      return;
+    }
+    const cfg = G.contactForm || {};
+    if (!cfg.accessKey) return fail("O envio de mensagens ainda não está configurado.");
+
+    contactSending = true;
+    submit.disabled = true;
+    submit.textContent = "Enviando…";
+    setStatus("Enviando sua mensagem…");
+    const name = f.name.value.trim();
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 20000);
+      const res = await fetch(cfg.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: cfg.accessKey,
+          subject: `Contato pelo site ${G.name} — ${name}`,
+          from_name: `${G.name} (site)`,
+          name,
+          email: f.email.value.trim(),
+          message: f.message.value.trim(),
+          botcheck: ""
+        }),
+        signal: ctrl.signal
+      }).finally(() => clearTimeout(timer));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success !== true) throw new Error(data.message || `HTTP ${res.status}`);
+      setStatus("Obrigado! Sua mensagem foi enviada. Entraremos em contato em breve.", "ok");
+      cf.reset();
+    } catch (err) {
+      console.warn("Falha ao enviar o formulário de contato.", err);
+      fail("Não foi possível enviar sua mensagem agora. Tente novamente em instantes.");
+    } finally {
+      contactSending = false;
+      submit.disabled = false;
+      submit.textContent = "Enviar mensagem";
+    }
   });
 
   $("#year").textContent = new Date().getFullYear();

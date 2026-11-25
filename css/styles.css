@@ -261,6 +261,8 @@ h2 { font-family: var(--serif); font-size: 34px; margin-bottom: 18px; }
 .form-status { grid-column: 1 / -1; font-size: 13px; }
 .form-status.ok { color: var(--available); }
 .form-status.error { color: var(--sold); }
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.contact-form .btn:disabled { opacity: .6; cursor: progress; }
 
 .btn {
   justify-self: start; background: var(--accent); color: #fff; border: 1px solid var(--accent);
@@ -361,7 +363,8 @@ h2 { font-family: var(--serif); font-size: 34px; margin-bottom: 18px; }
   .nav-btn { top: auto; bottom: 12px; transform: none; font-size: 40px; position: fixed; }
   .nav-toggle { display: block; }
   .hero-cover { height: auto; min-height: 100svh; padding: 96px 20px 120px; }
-  .hero-info { flex-direction: column; }
+  .hero-info { flex-direction: column; bottom: 64px; }
+  .intro { margin-top: 40px; }
   .main-nav ul {
     position: absolute; top: 72px; left: 0; right: 0; flex-direction: column; align-items: flex-start;
     gap: 18px; padding: 24px 20px; background: #fff; color: var(--fg); box-shadow: 0 8px 16px rgba(0,0,0,.08);

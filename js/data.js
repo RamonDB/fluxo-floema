@@ -2,7 +2,13 @@ window.GALLERY = {
   name: "Fluxo Floema",
   artist: "Vicente Baltar",
   artistDates: "n. 1952",
-  email: "contato@galerialumen.com.br",
+  email: "pedrodomingos.contato@gmail.com",
+  // Formulário de contato: enviado pelo Web3Forms (web3forms.com), que entrega a mensagem no e-mail
+  // cadastrado ao criar a chave. A chave é pública por desenho (só permite enviar para esse e-mail).
+  contactForm: {
+    endpoint: "https://api.web3forms.com/submit",
+    accessKey: "54cf5879-8679-4a03-939a-cba572f7533b"
+  },
   rates: { BRL: 1, USD: 0.19, EUR: 0.17 },
   // Login: usuário + senha (conferidos pelo hash abaixo). O token do GitHub é pedido só na
   // primeira vez em cada navegador e fica salvo nele criptografado com a senha.

@@ -130,18 +130,22 @@
       <form id="contact-form" class="contact-form" novalidate>
         <div class="field">
           <label for="c-name">Nome</label>
-          <input id="c-name" name="name" required autocomplete="name" />
+          <input id="c-name" name="name" required maxlength="100" autocomplete="name" />
         </div>
         <div class="field">
           <label for="c-email">E-mail</label>
-          <input id="c-email" name="email" type="email" required autocomplete="email" />
+          <input id="c-email" name="email" type="email" required maxlength="150" autocomplete="email" />
         </div>
         <div class="field full">
           <label for="c-msg">Mensagem</label>
-          <textarea id="c-msg" name="message" rows="4" required></textarea>
+          <textarea id="c-msg" name="message" rows="4" required maxlength="3000"></textarea>
+        </div>
+        <div class="hp-field" aria-hidden="true">
+          <label for="c-site">Não preencha este campo</label>
+          <input id="c-site" name="botcheck" type="text" tabindex="-1" autocomplete="off" />
         </div>
         <button type="submit" class="btn">Enviar mensagem</button>
-        <p class="form-status" role="status"></p>
+        <p class="form-status" role="status" aria-live="polite"></p>
       </form>
     </section>
   </main>
